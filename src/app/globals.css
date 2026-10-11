@@ -1,26 +1,210 @@
 @import "tailwindcss";
 
+/* ---------- E-Cell VIT · "The Scouts of VIT" tokens (from the Figma studio palette) ---------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #090a08; /* studio black */
+  --bg-elev: #0b1711; /* studio navy (deep forest) */
+  --forest: #1c4a35;
+  --moss: #2f6b4d;
+  --gold: #c7a54f;
+  --gold-light: #ead9a6;
+  --ivory: #f4f0e6;
+  --ivory-deep: #e9e5da;
+  --ink: #0b0e11;
+  --surface: rgba(234, 217, 166, 0.035);
+  --surface-hover: rgba(234, 217, 166, 0.07);
+  --border: rgba(234, 217, 166, 0.11);
+  --border-strong: rgba(234, 217, 166, 0.24);
+  --fg: #f4f0e6;
+  --fg-muted: #a8a596;
+  --fg-subtle: #6f6d62;
+  --gold-soft: rgba(199, 165, 79, 0.14);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-elev: var(--bg-elev);
+  --color-forest: var(--forest);
+  --color-moss: var(--moss);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-soft: var(--gold-soft);
+  --color-ivory: var(--ivory);
+  --color-ivory-deep: var(--ivory-deep);
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-subtle: var(--fg-subtle);
+  --font-display: var(--font-bebas);
+  --font-serif: var(--font-cinzel);
+  --font-grotesk: var(--font-space);
+  --font-sans: var(--font-dm);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-dm), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+/* Bebas is uppercase-only and tall; give it room */
+.font-display {
+  letter-spacing: 0.01em;
+  line-height: 0.88;
+}
+
+/* film grain over everything */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 70;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grain 1.2s steps(6) infinite;
+}
+@keyframes grain {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3%, 2%);
+  }
+  40% {
+    transform: translate(2%, -3%);
+  }
+  60% {
+    transform: translate(-2%, -1%);
+  }
+  80% {
+    transform: translate(3%, 3%);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* metallic gold text, slowly shimmering */
+@keyframes sheen {
+  to {
+    background-position: 200% center;
+  }
+}
+.text-metal {
+  background: linear-gradient(
+    100deg,
+    #8a6d2c 0%,
+    #c7a54f 22%,
+    #f6e7b4 38%,
+    #c7a54f 52%,
+    #8a6d2c 70%,
+    #c7a54f 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 7s linear infinite;
+}
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--gold);
+}
+.text-outline-ink {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--ink);
+}
+
+/* hairline grid */
+.bg-grid {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+/* marquee */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+.animate-marquee-rev {
+  animation: marquee 38s linear infinite reverse;
+}
+
+/* 3D flip cards */
+.flip {
+  perspective: 1400px;
+}
+.flip-inner {
+  position: relative;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.flip:hover .flip-inner,
+.flip.is-flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+.animate-float {
+  animation: float-y 7s ease-in-out infinite;
+}
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 60s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
 }

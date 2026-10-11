@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# E-Cell VIT website
 
-## Getting Started
+Website for the Entrepreneurship Cell of Vidyalankar Institute of Technology ("The Scouts of VIT"), with a built-in admin panel for editing content without touching code.
 
-First, run the development server:
+Built with **Next.js 16** (App Router), **React 19**, **Tailwind CSS 4**, **Framer Motion** and **Vercel Blob** for storage.
+
+> This Next.js version has breaking changes from older releases. Before changing framework-level code, read the guides in `node_modules/next/dist/docs/` (see [AGENTS.md](AGENTS.md)).
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+No setup is needed for local development. Without a Blob token, the admin panel stores content in a local `.data/` folder (git-ignored), so local edits never touch the live site. In dev the admin password defaults to `admin`; to override it, copy `.env.example` to `.env.local`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command             | What it does                    |
+| ------------------- | ------------------------------- |
+| `npm run dev`       | Start the dev server            |
+| `npm run build`     | Production build                |
+| `npm run lint`      | ESLint                          |
+| `npm run typecheck` | TypeScript check                |
+| `npm run format`    | Format everything with Prettier |
 
-## Learn More
+Please run `npm run format` and `npm run lint` before committing.
 
-To learn more about Next.js, take a look at the following resources:
+### Environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See `.env.example`. Never commit `.env*` files.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Variable                | Purpose                                                      |
+| ----------------------- | ------------------------------------------------------------ |
+| `ADMIN_PASSWORD`        | Password for `/admin`                                        |
+| `SESSION_SECRET`        | Signs the admin session cookie                               |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob store (production/preview only; optional in dev) |
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/
+    (site)/          Public pages: home, events, startups, marketplace, about, contact, submit
+    admin/           Admin panel (login + (panel) section pages)
+    actions/         Server actions (public.ts = forms, admin.ts = admin edits)
+    api/admin/upload Image upload route
+    media/[name]     Serves uploaded photos from Blob
+    globals.css      Tailwind import, colour tokens, shared animations
+  components/
+    home/            Homepage sections (Hero, Divisions, Ventures, ...)
+    views/           Client-side page bodies (filters, forms)
+    admin/           Admin UI (shell, editors, inbox, history)
+    ui/              Small shared pieces (Button, Reveal, Counter, ...)
+  lib/
+    data.ts          Types and default content
+    content.ts       Read/write content (Blob in prod, .data/ in dev)
+    store.ts         Storage layer
+    session.ts, auth.ts   Admin login and session cookie
+  proxy.ts           Redirects anyone without an admin session away from /admin
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Design tokens
+
+Colours and fonts are defined once in `src/app/globals.css` (`--gold`, `--forest`, `--ivory`, ...) and exposed to Tailwind (`text-gold`, `bg-elev`, `font-display`, ...). Change them there rather than hard-coding hex values.
+
+### Responsive design
+
+Mobile-first Tailwind: base classes are phones, `sm:` / `md:` / `lg:` add larger layouts. Check pages at 360-390px wide before merging.
+
+## Deployment
+
+Hosted on Vercel: https://ecell-vit-topaz.vercel.app
+
+```bash
+vercel deploy --prod --yes
+```
+
+Keep `vercel.json` (it pins the framework to Next.js).

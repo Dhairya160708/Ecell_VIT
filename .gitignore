@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*
+
+# local admin data (dev fallback for Vercel Blob)
+/.data
+
+# local logs
+dev.log
+!.env.example
