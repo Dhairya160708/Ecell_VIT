@@ -6,11 +6,6 @@ import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
 import { getContent } from "@/lib/content";
 
-export async function generateStaticParams() {
-  const { startups } = await getContent();
-  return startups.map((s) => ({ slug: s.slug }));
-}
-
 type Params = Promise<{ slug: string }>;
 
 // params are read inside <Suspense> so navigations stay instant under Cache Components.
@@ -87,7 +82,12 @@ async function StartupDetail({ params }: { params: Params }) {
                     {l.commitment} · {l.compensation}
                   </p>
                 </div>
-                <Button href="/marketplace" variant="ghost" className="!py-2">
+                <Button
+                  href={`/marketplace?apply=${l.uid}`}
+                  label={`Apply for ${l.role}`}
+                  variant="ghost"
+                  className="!py-2"
+                >
                   Apply
                 </Button>
               </li>

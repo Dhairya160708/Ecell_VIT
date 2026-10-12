@@ -1,7 +1,9 @@
 "use client";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import type { EventItem } from "@/lib/data";
+import { sortEvents } from "@/lib/events";
+import { useToday } from "@/lib/useToday";
 import { EventCard } from "../EventCard";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Button } from "../ui/Button";
@@ -11,6 +13,8 @@ export function EventsRail({ events }: { events: EventItem[] }) {
   const section = useRef<HTMLElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const [distance, setDistance] = useState(0);
+  const today = useToday();
+  const sorted = useMemo(() => sortEvents(events, today), [events, today]);
 
   useLayoutEffect(() => {
     const measure = () => track.current && setDistance(Math.max(track.current.scrollWidth - innerWidth, 0));
@@ -53,7 +57,7 @@ export function EventsRail({ events }: { events: EventItem[] }) {
               </Button>
             </div>
           </div>
-          {events.map((e, i) => (
+          {sorted.map((e, i) => (
             <div key={e.uid} className="w-[min(82vw,24rem)] shrink-0">
               <EventCard e={e} i={i} />
             </div>

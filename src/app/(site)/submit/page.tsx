@@ -37,10 +37,15 @@ export default function Submit() {
     }
     setBusy(true);
     setError("");
-    const r = await submitIdea(new FormData(e.currentTarget));
-    setBusy(false);
-    if (r.ok) setDone(true);
-    else setError(r.error);
+    try {
+      const r = await submitIdea(new FormData(e.currentTarget));
+      if (r.ok) setDone(true);
+      else setError(r.error);
+    } catch {
+      setError("We couldn't submit your idea. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -150,9 +155,7 @@ export default function Submit() {
                 ) : (
                   <span />
                 )}
-                <Button className={busy ? "pointer-events-none opacity-60" : ""}>
-                  {busy ? "Sending…" : step < 2 ? "Continue" : "Submit idea"}
-                </Button>
+                <Button disabled={busy}>{busy ? "Sending…" : step < 2 ? "Continue" : "Submit idea"}</Button>
               </div>
             </form>
           </>

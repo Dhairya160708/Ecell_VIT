@@ -12,6 +12,7 @@ const links = [
   ["Startups", "/startups"],
   ["Marketplace", "/marketplace"],
   ["About", "/about"],
+  ["Contact", "/contact"],
 ];
 
 export function Nav() {
@@ -31,13 +32,13 @@ export function Nav() {
     <motion.header
       animate={{ y: hidden ? -96 : 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${solid || open ? "border-b border-line bg-bg/85 backdrop-blur-xl" : "border-b border-transparent"}`}
+      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${solid || open ? "border-b border-line bg-bg/95 backdrop-blur-xl" : "border-b border-transparent bg-gradient-to-b from-bg/90 to-transparent"}`}
     >
       <nav className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
         <Link href="/" aria-label="E-Cell VIT home" onClick={() => setOpen(false)}>
           <Logo />
         </Link>
-        <ul className="hidden items-center gap-9 md:flex">
+        <ul className="hidden items-center gap-7 lg:flex xl:gap-9">
           {links.map(([label, href]) => {
             const active = path.startsWith(href);
             return (
@@ -55,7 +56,7 @@ export function Nav() {
             );
           })}
         </ul>
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <Button href="/contact" className="!px-5 !py-2.5">
             Join the regiment
           </Button>
@@ -64,7 +65,7 @@ export function Nav() {
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-label="Toggle navigation"
-          className="grid h-11 w-11 place-items-center border border-line-strong text-ivory md:hidden"
+          className="grid h-11 w-11 place-items-center border border-line-strong text-ivory lg:hidden"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -75,11 +76,11 @@ export function Nav() {
             initial={{ height: 0 }}
             animate={{ height: "auto" }}
             exit={{ height: 0 }}
-            className="overflow-hidden border-t border-line md:hidden"
+            className="overflow-hidden border-t border-line lg:hidden"
             aria-label="Mobile navigation"
           >
             <div className="px-5 py-4">
-              {[...links, ["Contact", "/contact"]].map(([label, href], i) => (
+              {links.map(([label, href], i) => (
                 <motion.div
                   key={href}
                   initial={{ opacity: 0, x: -16 }}

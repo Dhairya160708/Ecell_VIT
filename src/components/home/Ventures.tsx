@@ -15,7 +15,7 @@ export function Ventures({ startups }: { startups: Startup[] }) {
               Meet the ventures <span className="text-outline-ink">taking shape.</span>
             </h2>
           </div>
-          <p className="max-w-xs text-sm leading-6 text-ink/55">
+          <p className="max-w-xs text-sm leading-6 text-ink/65">
             Hover or tap a card to discover the idea behind it.
           </p>
         </Reveal>

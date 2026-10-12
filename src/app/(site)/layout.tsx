@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Intro } from "@/components/Intro";
@@ -10,7 +11,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     <div className="grain">
       <Intro />
       <ScrollProgress />
-      <Nav />
+      {/* usePathname() in Nav needs a Suspense boundary on routes with dynamic params */}
+      <Suspense fallback={null}>
+        <Nav />
+      </Suspense>
       <main>{children}</main>
       <Footer site={site} />
     </div>

@@ -10,6 +10,10 @@ type Props = {
   onClick?: () => void;
   className?: string;
   arrow?: boolean;
+  id?: string;
+  /** Accessible name when the visible text alone is ambiguous (e.g. several "Apply" buttons). */
+  label?: string;
+  disabled?: boolean;
 };
 
 const styles = {
@@ -26,6 +30,9 @@ export function Button({
   onClick,
   className = "",
   arrow = true,
+  id,
+  label,
+  disabled = false,
 }: Props) {
   const x = useSpring(useMotionValue(0), { stiffness: 260, damping: 18 });
   const y = useSpring(useMotionValue(0), { stiffness: 260, damping: 18 });
@@ -56,11 +63,18 @@ export function Button({
       className="inline-block"
     >
       {href ? (
-        <Link href={href} className={cls}>
+        <Link href={href} id={id} aria-label={label} className={cls}>
           {inner}
         </Link>
       ) : (
-        <button type={onClick ? "button" : "submit"} onClick={onClick} className={cls}>
+        <button
+          type={onClick ? "button" : "submit"}
+          id={id}
+          aria-label={label}
+          disabled={disabled}
+          onClick={onClick}
+          className={`${cls} disabled:pointer-events-none disabled:opacity-60`}
+        >
           {inner}
         </button>
       )}

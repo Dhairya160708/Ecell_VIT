@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { sendMessage } from "@/app/actions/public";
 
 const field =
-  "mt-2 w-full border border-ink/15 bg-ivory/60 px-4 py-3.5 text-sm text-ink outline-none transition placeholder:text-ink/35 focus:border-gold focus:bg-white focus:shadow-[0_0_0_4px_rgba(199,165,79,.18)]";
+  "mt-2 w-full border border-ink/15 bg-ivory/60 px-4 py-3.5 text-sm text-ink outline-none transition placeholder:text-ink/60 focus:border-gold focus:bg-white focus:shadow-[0_0_0_4px_rgba(199,165,79,.18)]";
 const label = "block font-grotesk text-xs font-bold uppercase tracking-[0.14em] text-ink/60";
 
 export function ContactView({ email, address }: { email: string; address: string }) {
@@ -20,12 +20,17 @@ export function ContactView({ email, address }: { email: string; address: string
     const form = e.currentTarget;
     setBusy(true);
     setError("");
-    const r = await sendMessage(new FormData(form));
-    setBusy(false);
-    if (r.ok) {
-      form.reset();
-      setSent(true);
-    } else setError(r.error);
+    try {
+      const r = await sendMessage(new FormData(form));
+      if (r.ok) {
+        form.reset();
+        setSent(true);
+      } else setError(r.error);
+    } catch {
+      setError("We couldn't send your message. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   }
   return (
     <>
@@ -46,14 +51,14 @@ export function ContactView({ email, address }: { email: string; address: string
                 href={`mailto:${email}`}
                 className="flex gap-4 border-t border-ink/15 py-5 transition hover:text-moss"
               >
-                <Mail className="h-5 w-5 text-gold" />
+                <Mail className="h-5 w-5 text-gold-deep" />
                 <span>
                   <span className={label}>Email</span>
                   <span className="mt-1 block font-semibold">{email}</span>
                 </span>
               </a>
               <div className="flex gap-4 border-y border-ink/15 py-5">
-                <MapPin className="h-5 w-5 shrink-0 text-gold" />
+                <MapPin className="h-5 w-5 shrink-0 text-gold-deep" />
                 <span>
                   <span className={label}>Campus</span>
                   <span className="mt-1 block max-w-xs font-semibold leading-6">{address}</span>
@@ -133,7 +138,7 @@ export function ContactView({ email, address }: { email: string; address: string
                     </p>
                   )}
                   <div>
-                    <Button variant="ink" className={busy ? "pointer-events-none opacity-60" : ""}>
+                    <Button variant="ink" disabled={busy}>
                       {busy ? "Sending…" : "Send message"}
                     </Button>
                   </div>

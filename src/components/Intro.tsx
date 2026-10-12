@@ -14,6 +14,7 @@ type P = { x: number; y: number; tx: number; ty: number; c: string; d: number; s
 export function Intro() {
   const [phase, setPhase] = useState<"dust" | "gates" | "done">("dust");
   const canvas = useRef<HTMLCanvasElement>(null);
+  const stop = useRef<() => void>(() => {});
 
   useEffect(() => {
     // Already seen / reduced motion: the pre-paint script flagged it and CSS keeps the overlay hidden.
@@ -35,13 +36,15 @@ export function Intro() {
     cv.width = W * dpr;
     cv.height = H * dpr;
     ctx.scale(dpr, dpr);
-    let raf = 0;
+    let raf = 0,
+      stopped = false;
     const parts: P[] = [];
     const t0 = performance.now();
 
     const img = new Image();
     img.src = "/brand/crest.webp";
     img.onload = () => {
+      if (stopped) return;
       const h = Math.min(H * 0.42, 340),
         w = h * (img.width / img.height);
       const off = document.createElement("canvas");
@@ -70,6 +73,7 @@ export function Intro() {
           });
         }
       const tick = (now: number) => {
+        if (stopped) return;
         const t = (now - t0) / 1000;
         ctx.clearRect(0, 0, W, H);
         for (const p of parts) {
@@ -86,18 +90,22 @@ export function Intro() {
       };
       raf = requestAnimationFrame(tick);
     };
-    return () => {
+    // Called when the intro is finished (and on unmount): ends the particle loop and the skip listeners.
+    stop.current = () => {
+      stopped = true;
       clearTimeout(toGates);
       cancelAnimationFrame(raf);
       removeEventListener("keydown", skip);
       removeEventListener("pointerdown", skip);
     };
+    return () => stop.current();
   }, []);
 
   useEffect(() => {
     if (phase !== "gates") return;
     const t = setTimeout(() => {
       setPhase("done");
+      stop.current();
       document.documentElement.style.overflow = "";
     }, 1300);
     return () => clearTimeout(t);

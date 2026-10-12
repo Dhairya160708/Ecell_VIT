@@ -21,7 +21,7 @@ export function Logo({ compact = false }: { compact?: boolean }) {
         <Crest className="h-8 w-auto" priority />
       </span>
       {!compact && (
-        <span className="leading-none">
+        <span className="whitespace-nowrap leading-none">
           <span className="block font-serif text-lg font-semibold tracking-[0.22em] text-ivory">E-CELL</span>
           <span className="mt-1 block text-[9px] font-semibold tracking-[0.3em] text-gold">
             THE SCOUTS OF VIT

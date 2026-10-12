@@ -1,15 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageHeader } from "@/components/PageHeader";
 import { EventCard } from "@/components/EventCard";
 import type { EventItem } from "@/lib/data";
+import { eventStatus, sortEvents } from "@/lib/events";
+import { useToday } from "@/lib/useToday";
 
 const filters = ["All", "Ongoing", "Upcoming", "Past"] as const;
 
 export function EventsView({ events }: { events: EventItem[] }) {
   const [f, setF] = useState<(typeof filters)[number]>("All");
-  const list = f === "All" ? events : events.filter((e: EventItem) => e.status === f);
+  const today = useToday();
+  const sorted = useMemo(() => sortEvents(events, today), [events, today]);
+  const list = f === "All" ? sorted : sorted.filter((e: EventItem) => today && eventStatus(e, today) === f);
   return (
     <>
       <PageHeader eyebrow="Events & experiences" title="Come curious." accent="Leave building.">

@@ -8,6 +8,7 @@
   --moss: #2f6b4d;
   --gold: #c7a54f;
   --gold-light: #ead9a6;
+  --gold-deep: #7a5c12; /* gold for text on cream/white surfaces: 5.5:1 on ivory (plain gold is only 2.1:1) */
   --ivory: #f4f0e6;
   --ivory-deep: #e9e5da;
   --ink: #0b0e11;
@@ -17,7 +18,7 @@
   --border-strong: rgba(234, 217, 166, 0.24);
   --fg: #f4f0e6;
   --fg-muted: #a8a596;
-  --fg-subtle: #6f6d62;
+  --fg-subtle: #85826f; /* 5.1:1 on --bg */
   --gold-soft: rgba(199, 165, 79, 0.14);
 }
 
@@ -28,6 +29,7 @@
   --color-moss: var(--moss);
   --color-gold: var(--gold);
   --color-gold-light: var(--gold-light);
+  --color-gold-deep: var(--gold-deep);
   --color-gold-soft: var(--gold-soft);
   --color-ivory: var(--ivory);
   --color-ivory-deep: var(--ivory-deep);
