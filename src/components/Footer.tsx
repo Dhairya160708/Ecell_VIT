@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Mail, MapPin } from "lucide-react";
 import { Logo } from "./Logo";
-import type { SiteText } from "@/lib/data";
+import type { SiteText } from "@/types/content";
 
 const go = [
   ["Events", "/events"],

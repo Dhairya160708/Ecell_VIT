@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import type { Person } from "@/lib/data";
+import type { Person } from "@/types/content";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Reveal } from "../ui/Reveal";
 

@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Reveal } from "../ui/Reveal";
 import { Counter } from "../ui/Counter";
-import type { Stat } from "@/lib/data";
+import type { Stat } from "@/types/content";
 
 export function AboutCell({ lead, body, stats }: { lead: string; body: string; stats: Stat[] }) {
   return (

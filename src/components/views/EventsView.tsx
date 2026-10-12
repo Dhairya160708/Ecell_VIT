@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageHeader } from "@/components/PageHeader";
 import { EventCard } from "@/components/EventCard";
-import type { EventItem } from "@/lib/data";
+import type { EventItem } from "@/types/content";
 import { eventStatus, sortEvents } from "@/lib/events";
 import { useToday } from "@/lib/useToday";
 

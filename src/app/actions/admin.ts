@@ -5,7 +5,8 @@ import { requireFaculty } from "@/lib/auth";
 import { db } from "@/lib/supabase/admin";
 import { sessionClient } from "@/lib/supabase/server";
 import { deleteInboxItem, getInboxItem, saveInboxItem, writeSection } from "@/lib/content";
-import { makeUid, slugify, type Content, type InboxKind, type Section } from "@/lib/data";
+import { makeUid, slugify } from "@/lib/utils";
+import { type Content, type InboxKind, type Section } from "@/types/content";
 
 export type Result = { ok: true; message?: string } | { ok: false; error: string };
 

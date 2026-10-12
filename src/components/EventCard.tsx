@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { dayMonth, type EventItem } from "@/lib/data";
+import { dayMonth } from "@/lib/utils";
+import { type EventItem } from "@/types/content";
 import { eventHref, eventStatus } from "@/lib/events";
 import { useToday } from "@/lib/useToday";
 

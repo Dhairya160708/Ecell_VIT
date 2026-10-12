@@ -1,4 +1,4 @@
-import type { Startup } from "@/lib/data";
+import type { Startup } from "@/types/content";
 import { StartupCard } from "../StartupCard";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Reveal } from "../ui/Reveal";

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import type { Division } from "@/lib/data";
+import type { Division } from "@/types/content";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Reveal } from "../ui/Reveal";
 import { Crest } from "../Logo";

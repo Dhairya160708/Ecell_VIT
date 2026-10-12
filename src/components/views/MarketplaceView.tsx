@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
 import { applyToListing } from "@/app/actions/public";
-import type { Listing } from "@/lib/data";
+import type { Listing } from "@/types/content";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 
 const field =

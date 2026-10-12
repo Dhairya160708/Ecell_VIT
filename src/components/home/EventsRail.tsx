@@ -1,7 +1,7 @@
 "use client";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import type { EventItem } from "@/lib/data";
+import type { EventItem } from "@/types/content";
 import { sortEvents } from "@/lib/events";
 import { useToday } from "@/lib/useToday";
 import { EventCard } from "../EventCard";

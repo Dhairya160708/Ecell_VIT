@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { saveSection } from "@/app/actions/admin";
-import type { SiteText, Stat } from "@/lib/data";
+import type { SiteText, Stat } from "@/types/content";
 import { Btn, Card, FieldShell, inputCls, useToast } from "./ui";
 
 type Key = keyof SiteText;

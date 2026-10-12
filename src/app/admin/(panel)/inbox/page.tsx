@@ -4,7 +4,7 @@ import { listInbox } from "@/lib/content";
 import { InboxView } from "@/components/admin/InboxView";
 import { PageTitle } from "@/components/admin/ui";
 import { Loading } from "@/components/admin/Loading";
-import type { InboxKind } from "@/lib/data";
+import type { InboxKind } from "@/types/content";
 
 type SP = Promise<{ tab?: string }>;
 

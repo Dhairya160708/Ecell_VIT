@@ -8,15 +8,9 @@ import {
   Shield,
   Users,
 } from "lucide-react";
-import {
-  dayMonth,
-  startupCategories,
-  type Division,
-  type EventItem,
-  type Listing,
-  type Person,
-  type Startup,
-} from "@/lib/data";
+import { dayMonth } from "@/lib/utils";
+import { startupCategories } from "@/lib/constants";
+import { type Division, type EventItem, type Listing, type Person, type Startup } from "@/types/content";
 import { eventStatus, sortEvents, todayIST } from "@/lib/events";
 import { CollectionEditor, type Field } from "./CollectionEditor";
 import { Badge, Btn } from "./ui";

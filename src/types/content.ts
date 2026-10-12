@@ -1,5 +1,5 @@
-// Content model for the whole site. Admins edit all of this from /admin; it is stored in Supabase
-// (see lib/content.ts). The only values defined here are the fallback site text.
+// Content model for the whole site. It is stored in Supabase (see server/content.ts), edited by faculty
+// from /admin and read by the public pages.
 
 export type Startup = {
   uid: string;
@@ -82,23 +82,6 @@ export type Content = {
 
 export type Section = keyof Content;
 
-/** Fallback site text, used for any field not yet saved in the site_settings table. */
-export const defaultSite: SiteText = {
-  heroKicker: "Entrepreneurship Cell · Vidyalankar Institute of Technology",
-  heroTagline: "Turning campus curiosity into ventures that move the world forward.",
-  manifesto:
-    "We are the scouts of VIT. We go beyond the walls of the classroom to find problems worth solving — and we come back with ventures.",
-  aboutLead:
-    "E-Cell VIT is a student-led community that brings ambitious ideas, practical guidance, and real opportunities under one roof.",
-  aboutBody:
-    "From first sketch to first customer, we create space for students to test ideas, meet mentors, find teammates, and build with confidence.",
-  ctaHeading: "Have an idea worth building?",
-  email: "ecell@vit.edu.in",
-  address: "Vidyalankar Institute of Technology, Vidyalankar College Marg, Wadala (E), Mumbai 400037",
-  instagram: "",
-  linkedin: "",
-};
-
 // ---------- Inbox: things visitors send through the website's forms ----------
 export type Message = {
   kind: "messages";
@@ -143,39 +126,3 @@ export type Application = {
 };
 export type InboxItem = Message | Idea | Application;
 export type InboxKind = InboxItem["kind"];
-
-// ---------- helpers shared by site + admin ----------
-export const startupCategories = [
-  "AI / Productivity",
-  "Climate Tech",
-  "FinTech",
-  "HealthTech",
-  "EdTech",
-  "Community",
-  "SaaS",
-  "Hardware",
-  "Other",
-];
-
-const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-export function dayMonth(iso: string) {
-  const [, m, d] = iso.split("-").map(Number);
-  return { day: String(d || 1).padStart(2, "0"), month: MONTHS[(m || 1) - 1] ?? "" };
-}
-
-export function slugify(s: string) {
-  return (
-    s
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[^\w\s-]/g, "")
-      .trim()
-      .replace(/[\s_]+/g, "-")
-      .replace(/-+/g, "-")
-      .slice(0, 60) || "startup"
-  );
-}
-
-export function makeUid(prefix = "x") {
-  return `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
-}

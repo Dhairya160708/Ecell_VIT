@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import { defaultSite } from "@/lib/constants";
 import {
-  defaultSite,
   type Application,
   type Content,
   type Idea,
@@ -9,7 +9,7 @@ import {
   type InboxKind,
   type Message,
   type Section,
-} from "./data";
+} from "@/types/content";
 import { db } from "./supabase/admin";
 
 // ---------- row <-> Content mapping ----------

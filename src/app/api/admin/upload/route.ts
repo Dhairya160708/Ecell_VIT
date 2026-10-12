@@ -1,6 +1,6 @@
 import { currentFaculty } from "@/lib/auth";
 import { writeBinary } from "@/lib/store";
-import { makeUid } from "@/lib/data";
+import { makeUid } from "@/lib/utils";
 
 const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 

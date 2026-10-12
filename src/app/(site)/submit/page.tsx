@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { submitIdea } from "@/app/actions/public";
-import { startupCategories } from "@/lib/data";
+import { startupCategories } from "@/lib/constants";
 
 const field =
   "w-full border border-line bg-surface px-4 py-3 text-sm outline-none transition focus:border-gold focus:shadow-[0_0_0_4px_var(--gold-soft)]";

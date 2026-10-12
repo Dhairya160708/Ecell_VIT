@@ -1,4 +1,4 @@
-import type { EventItem } from "./data";
+import type { EventItem } from "@/types/content";
 
 export type EventStatus = "Ongoing" | "Upcoming" | "Past";
 

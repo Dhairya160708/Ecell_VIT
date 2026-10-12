@@ -1,7 +1,7 @@
 "use server";
 import { saveInboxItem } from "@/lib/content";
 import { db } from "@/lib/supabase/admin";
-import { makeUid } from "@/lib/data";
+import { makeUid } from "@/lib/utils";
 
 export type FormResult = { ok: true } | { ok: false; error: string };
 
