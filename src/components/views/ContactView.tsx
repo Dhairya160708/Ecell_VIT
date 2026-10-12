@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Mail, MapPin } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/Button";
-import { sendMessage } from "@/app/actions/public";
+import { sendMessage } from "@/server/actions/public";
 
 const field =
   "mt-2 w-full border border-ink/15 bg-ivory/60 px-4 py-3.5 text-sm text-ink outline-none transition placeholder:text-ink/60 focus:border-gold focus:bg-white focus:shadow-[0_0_0_4px_rgba(199,165,79,.18)]";

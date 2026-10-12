@@ -11,7 +11,7 @@ import {
   Rocket,
   Sparkles,
 } from "lucide-react";
-import { listInbox, readContent } from "@/lib/content";
+import { listInbox, readContent } from "@/server/content";
 import { Card, PageTitle } from "@/components/admin/ui";
 import { eventStatus } from "@/lib/events";
 import { Loading } from "@/components/admin/Loading";

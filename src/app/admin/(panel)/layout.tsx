@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { currentFaculty } from "@/lib/auth";
+import { currentFaculty } from "@/server/auth";
 import { Shell } from "@/components/admin/Shell";
-import { listInbox } from "@/lib/content";
+import { listInbox } from "@/server/content";
 
 async function InboxBadge() {
   await connection();

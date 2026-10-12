@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
-import { getContent } from "@/lib/content";
+import { getContent } from "@/server/content";
 
 type Params = Promise<{ slug: string }>;
 

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { MarketplaceView } from "@/components/views/MarketplaceView";
-import { getContent } from "@/lib/content";
+import { getContent } from "@/server/content";
 
 export default async function Marketplace() {
   const { listings, startups } = await getContent();

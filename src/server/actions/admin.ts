@@ -1,10 +1,10 @@
 "use server";
 import { redirect } from "next/navigation";
 import { updateTag } from "next/cache";
-import { requireFaculty } from "@/lib/auth";
-import { db } from "@/lib/supabase/admin";
-import { sessionClient } from "@/lib/supabase/server";
-import { deleteInboxItem, getInboxItem, saveInboxItem, writeSection } from "@/lib/content";
+import { requireFaculty } from "@/server/auth";
+import { db } from "@/server/supabase/admin";
+import { sessionClient } from "@/server/supabase/server";
+import { deleteInboxItem, getInboxItem, saveInboxItem, writeSection } from "@/server/content";
 import { makeUid, slugify } from "@/lib/utils";
 import { type Content, type InboxKind, type Section } from "@/types/content";
 

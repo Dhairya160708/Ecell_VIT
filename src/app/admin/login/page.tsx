@@ -2,7 +2,7 @@
 import { Suspense, useActionState, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2, Lock } from "lucide-react";
-import { login } from "@/app/actions/admin";
+import { login } from "@/server/actions/admin";
 import { Crest } from "@/components/Logo";
 
 function LoginForm() {

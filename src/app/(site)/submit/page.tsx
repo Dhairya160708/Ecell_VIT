@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/Button";
-import { submitIdea } from "@/app/actions/public";
+import { submitIdea } from "@/server/actions/public";
 import { startupCategories } from "@/lib/constants";
 
 const field =

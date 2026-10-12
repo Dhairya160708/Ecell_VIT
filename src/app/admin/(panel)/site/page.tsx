@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { readContent } from "@/lib/content";
+import { readContent } from "@/server/content";
 import { SiteEditor } from "@/components/admin/SiteEditor";
 import { PageTitle } from "@/components/admin/ui";
 import { Loading } from "@/components/admin/Loading";

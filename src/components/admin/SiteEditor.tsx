@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { saveSection } from "@/app/actions/admin";
+import { saveSection } from "@/server/actions/admin";
 import type { SiteText, Stat } from "@/types/content";
 import { Btn, Card, FieldShell, inputCls, useToast } from "./ui";
 

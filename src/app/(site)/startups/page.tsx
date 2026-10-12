@@ -1,5 +1,5 @@
 import { StartupsView } from "@/components/views/StartupsView";
-import { getContent } from "@/lib/content";
+import { getContent } from "@/server/content";
 
 export default async function Startups() {
   const { startups } = await getContent();

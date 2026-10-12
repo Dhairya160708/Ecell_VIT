@@ -1,5 +1,5 @@
 import { ContactView } from "@/components/views/ContactView";
-import { getContent } from "@/lib/content";
+import { getContent } from "@/server/content";
 
 export default async function Contact() {
   const { site } = await getContent();

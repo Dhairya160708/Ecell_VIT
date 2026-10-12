@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { listInbox } from "@/lib/content";
+import { listInbox } from "@/server/content";
 import { InboxView } from "@/components/admin/InboxView";
 import { PageTitle } from "@/components/admin/ui";
 import { Loading } from "@/components/admin/Loading";

@@ -1,4 +1,4 @@
-import { readBinary } from "@/lib/store";
+import { readBinary } from "@/server/media-store";
 
 // Serves uploaded photos from the private store. Names are unique per upload, so cache forever.
 export async function GET(_: Request, { params }: { params: Promise<{ name: string }> }) {

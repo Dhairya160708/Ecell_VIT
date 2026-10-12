@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
-import { applyToListing } from "@/app/actions/public";
+import { applyToListing } from "@/server/actions/public";
 import type { Listing } from "@/types/content";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 

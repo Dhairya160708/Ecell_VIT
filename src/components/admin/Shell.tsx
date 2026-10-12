@@ -16,7 +16,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { logout } from "@/app/actions/admin";
+import { logout } from "@/server/actions/admin";
 import { Crest } from "@/components/Logo";
 
 const nav = [

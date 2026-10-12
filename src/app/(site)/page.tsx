@@ -7,7 +7,7 @@ import { EventsRail } from "@/components/home/EventsRail";
 import { Ventures } from "@/components/home/Ventures";
 import { People } from "@/components/home/People";
 import { CallToAction } from "@/components/home/CallToAction";
-import { getContent } from "@/lib/content";
+import { getContent } from "@/server/content";
 
 export default async function Home() {
   const c = await getContent();

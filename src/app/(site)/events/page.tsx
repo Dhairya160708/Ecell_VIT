@@ -1,5 +1,5 @@
 import { EventsView } from "@/components/views/EventsView";
-import { getContent } from "@/lib/content";
+import { getContent } from "@/server/content";
 
 export default async function Events() {
   const { events } = await getContent();

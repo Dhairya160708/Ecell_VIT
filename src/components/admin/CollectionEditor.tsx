@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useState } from "react";
 import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
-import { saveSection } from "@/app/actions/admin";
+import { saveSection } from "@/server/actions/admin";
 import { makeUid } from "@/lib/utils";
 import { type Content, type Section } from "@/types/content";
 import { Btn, Card, Drawer, Empty, FieldShell, inputCls, useConfirm, useToast } from "./ui";

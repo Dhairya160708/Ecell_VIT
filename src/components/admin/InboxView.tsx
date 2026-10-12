@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { BriefcaseBusiness, ChevronDown, Lightbulb, Mail, MessageSquare, Rocket, Trash2 } from "lucide-react";
-import { approveIdea, removeInbox, updateInbox } from "@/app/actions/admin";
+import { approveIdea, removeInbox, updateInbox } from "@/server/actions/admin";
 import type { Application, Idea, InboxItem, InboxKind, Message } from "@/types/content";
 import { Badge, Btn, Card, Empty, inputCls, timeAgo, useConfirm, useToast } from "./ui";
 
