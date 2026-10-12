@@ -5,16 +5,15 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   CalendarPlus,
-  History,
   Lightbulb,
   MessageSquare,
   PenLine,
   Rocket,
   Sparkles,
 } from "lucide-react";
-import { listInbox, listVersions, readContent } from "@/lib/content";
+import { listInbox, readContent } from "@/lib/content";
 import { Card, PageTitle } from "@/components/admin/ui";
-import { timeAgo } from "@/lib/time";
+import { eventStatus } from "@/lib/events";
 import { Loading } from "@/components/admin/Loading";
 
 function Tile({
@@ -53,16 +52,14 @@ function Tile({
 
 async function Dashboard() {
   await connection();
-  const [c, messages, ideas, apps, versions] = await Promise.all([
+  const [c, messages, ideas, apps] = await Promise.all([
     readContent(),
     listInbox("messages"),
     listInbox("ideas"),
     listInbox("applications"),
-    listVersions(),
   ]);
   const fresh = (xs: { status: string }[]) => xs.filter((x) => x.status === "New").length;
-  const upcoming = c.events.filter((e) => e.status !== "Past").length;
-  const last = versions[0];
+  const upcoming = c.events.filter((e) => eventStatus(e) !== "Past").length;
 
   return (
     <div className="space-y-10">
@@ -131,16 +128,6 @@ async function Dashboard() {
               </li>
             ))}
           </ul>
-          <p className="mt-4 flex items-center gap-2 text-sm text-black/55">
-            <History className="h-4 w-4" />
-            {last ? (
-              <>
-                Last change: <b className="text-black/75">{last.label}</b> · {timeAgo(last.savedAt)}
-              </>
-            ) : (
-              "No changes saved yet."
-            )}
-          </p>
         </Card>
         <Card className="!bg-[#fbf7ea]">
           <h2 className="flex items-center gap-2 font-grotesk text-lg font-bold">
@@ -158,11 +145,7 @@ async function Dashboard() {
               <b>3. Press “Save”.</b> The website updates by itself within a few seconds.
             </li>
             <li>
-              <b>Made a mistake?</b> Press <b>Undo</b> on the pop-up, or open{" "}
-              <Link href="/admin/history" className="font-semibold text-[#1c4a35] underline">
-                History & undo
-              </Link>{" "}
-              to go back to any earlier version.
+              <b>Made a mistake?</b> Press <b>Undo</b> on the pop-up straight after saving.
             </li>
           </ol>
         </Card>

@@ -1,44 +1,42 @@
 "use server";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { updateTag } from "next/cache";
-import { adminPassword, requireAdmin } from "@/lib/auth";
-import { COOKIE, MAX_AGE, createToken, timingSafeEqual } from "@/lib/session";
-import {
-  deleteInboxItem,
-  getInboxItem,
-  readContent,
-  readVersion,
-  saveInboxItem,
-  writeContent,
-} from "@/lib/content";
+import { requireFaculty } from "@/lib/auth";
+import { db } from "@/lib/supabase/admin";
+import { sessionClient } from "@/lib/supabase/server";
+import { deleteInboxItem, getInboxItem, saveInboxItem, writeSection } from "@/lib/content";
 import { makeUid, slugify, type Content, type InboxKind, type Section } from "@/lib/data";
 
 export type Result = { ok: true; message?: string } | { ok: false; error: string };
 
 // ---------- login ----------
 export async function login(_: string | null, form: FormData): Promise<string | null> {
-  const expected = adminPassword();
-  if (!expected)
-    return "The admin password hasn't been set up yet. Ask your website person to set ADMIN_PASSWORD.";
-  const given = String(form.get("password") ?? "");
-  if (!timingSafeEqual(given, expected)) {
+  const email = String(form.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const password = String(form.get("password") ?? "");
+  if (!email || !password) return "Please enter your email and password.";
+  const supabase = await sessionClient();
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user) {
     await new Promise((r) => setTimeout(r, 600)); // slow down guessing
-    return "That password isn't right. Check caps lock and try again.";
+    return "That email or password isn't right. Check caps lock and try again.";
   }
-  (await cookies()).set(COOKIE, await createToken(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: MAX_AGE,
-  });
+  const { data: row } = await db()
+    .from("faculty_users")
+    .select("user_id")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+  if (!row) {
+    await supabase.auth.signOut();
+    return "This account isn't set up as E-Cell faculty. Ask your coordinator to add you.";
+  }
   const next = String(form.get("next") ?? "");
   redirect(next.startsWith("/admin") ? next : "/admin");
 }
 
 export async function logout() {
-  (await cookies()).delete(COOKIE);
+  await (await sessionClient()).auth.signOut();
   redirect("/admin/login");
 }
 
@@ -49,6 +47,11 @@ const pick = <T extends string>(v: unknown, allowed: readonly T[]) =>
 const media = (v: unknown) => {
   const s = str(v, 300);
   return s.startsWith("/media/") ? s : undefined;
+};
+// External or on-site links only: https:// URLs or paths starting with "/".
+const link = (v: unknown) => {
+  const s = str(v, 300);
+  return /^https?:\/\/\S+$/i.test(s) || /^\/[\w\-/]*$/.test(s) ? s : undefined;
 };
 const arr = (v: unknown) => (Array.isArray(v) ? v.slice(0, 200) : []) as Record<string, unknown>[];
 
@@ -83,9 +86,10 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
       title: str(o.title, 80),
       date: /^\d{4}-\d{2}-\d{2}$/.test(str(o.date)) ? str(o.date) : new Date().toISOString().slice(0, 10),
       category: str(o.category, 60),
-      status: pick(o.status, ["Upcoming", "Ongoing", "Past"] as const),
+      endDate: /^\d{4}-\d{2}-\d{2}$/.test(str(o.endDate)) ? str(o.endDate) : undefined,
       summary: str(o.summary, 400),
       report: str(o.report, 160) || undefined,
+      reportUrl: link(o.reportUrl),
     })),
   startups: (v) => {
     const seen = new Set<string>();
@@ -106,6 +110,7 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
         problem: str(o.problem, 800),
         solution: str(o.solution, 800),
         photo: media(o.photo),
+        website: link(o.website),
       };
     });
   },
@@ -140,28 +145,18 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
       uid: str(o.uid, 40) || makeUid("tm"),
       name: str(o.name, 80),
       role: str(o.role, 80),
+      domain: str(o.domain, 40) || undefined,
+      linkedin: link(o.linkedin),
+      github: link(o.github),
       photo: media(o.photo),
     })),
 };
 
-const sectionNames: Record<Section, string> = {
-  site: "Website text",
-  stats: "Numbers",
-  events: "Events",
-  startups: "Startups",
-  listings: "Jobs board",
-  divisions: "Divisions",
-  faculty: "Faculty",
-  team: "Team",
-};
-
 export async function saveSection<K extends Section>(section: K, value: Content[K]): Promise<Result> {
   try {
-    await requireAdmin();
+    await requireFaculty();
     if (!(section in clean)) return { ok: false, error: "Unknown section." };
-    const current = await readContent();
-    const next = { ...current, [section]: clean[section](value) };
-    await writeContent(next, `Edited ${sectionNames[section]}`);
+    await writeSection(section, clean[section](value));
     updateTag("content");
     return { ok: true };
   } catch (e) {
@@ -169,27 +164,19 @@ export async function saveSection<K extends Section>(section: K, value: Content[
   }
 }
 
-export async function restoreVersion(pathname: string): Promise<Result> {
-  try {
-    await requireAdmin();
-    const version = await readVersion(pathname);
-    if (!version) return { ok: false, error: "That saved version could not be found." };
-    await writeContent(version, "Restored an earlier version");
-    updateTag("content");
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not restore that version." };
-  }
-}
-
 // ---------- inbox ----------
+const fail = (e: unknown, fallback: string): Result => ({
+  ok: false,
+  error: e instanceof Error ? e.message : fallback,
+});
+
 export async function updateInbox(
   kind: InboxKind,
   id: string,
   patch: { status?: string; note?: string; score?: number; comments?: string },
 ): Promise<Result> {
   try {
-    await requireAdmin();
+    const who = await requireFaculty();
     const item = await getInboxItem(kind, id);
     if (!item) return { ok: false, error: "That item no longer exists." };
     const next = { ...item } as Record<string, unknown>;
@@ -198,53 +185,70 @@ export async function updateInbox(
     if (patch.comments !== undefined) next.comments = str(patch.comments, 2000);
     if (patch.score !== undefined)
       next.score = Math.min(10, Math.max(0, Math.round(Number(patch.score) || 0)));
+    if (kind === "ideas") {
+      // An idea becomes a public startup only through approveIdea, never by flipping the status here.
+      if (patch.status === "Approved" && !(item as { startupSlug?: string }).startupSlug)
+        return { ok: false, error: "Use the Approve button, which also publishes the startup." };
+      next.reviewedBy = who.name || who.email;
+      next.reviewedAt = new Date().toISOString();
+    }
     await saveInboxItem(next as typeof item);
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not update that item." };
+    return fail(e, "Could not update that item.");
   }
 }
 
 export async function removeInbox(kind: InboxKind, id: string): Promise<Result> {
   try {
-    await requireAdmin();
+    await requireFaculty();
     await deleteInboxItem(kind, id);
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not delete that item." };
+    return fail(e, "Could not delete that item.");
   }
 }
 
-/** Approve a submitted idea and publish it as a startup on the website in one click. */
+/** Approve a submitted idea and publish it as a startup on the website in one step. */
 export async function approveIdea(id: string): Promise<Result> {
   try {
-    await requireAdmin();
+    const who = await requireFaculty();
     const idea = await getInboxItem("ideas", id);
     if (!idea) return { ok: false, error: "That idea no longer exists." };
-    const content = await readContent();
+    if (idea.status === "Approved" && idea.startupSlug) return { ok: true, message: idea.startupSlug };
+    const client = db();
+    const { data: rows, error: slugErr } = await client.from("startups").select("slug,position");
+    if (slugErr) throw new Error(slugErr.message);
+    const taken = new Set((rows ?? []).map((r) => r.slug as string));
     let slug = slugify(idea.name);
-    while (content.startups.some((s) => s.slug === slug)) slug = `${slug}-2`;
-    const startup = {
+    while (taken.has(slug)) slug = `${slug}-2`;
+    const position = Math.max(-1, ...(rows ?? []).map((r) => Number(r.position) || 0)) + 1;
+    const { error } = await client.from("startups").insert({
       uid: makeUid("sp"),
       slug,
-      regId: "",
+      reg_id: "",
       name: idea.name,
       pitch: idea.pitch,
       category: idea.category,
-      status: "Idea" as const,
+      status: "Idea",
       stage: "Approved idea",
       founder: idea.team.split(/[\n,]/)[0]?.trim() || "Student founder",
       problem: idea.problem,
       solution: idea.solution,
-    };
-    await writeContent(
-      { ...content, startups: [...content.startups, startup] },
-      `Approved idea: ${idea.name}`,
-    );
-    await saveInboxItem({ ...idea, status: "Approved", startupSlug: slug });
+      source_idea_uid: idea.id,
+      position,
+    });
+    if (error) throw new Error(error.message);
+    await saveInboxItem({
+      ...idea,
+      status: "Approved",
+      startupSlug: slug,
+      reviewedBy: who.name || who.email,
+      reviewedAt: new Date().toISOString(),
+    });
     updateTag("content");
     return { ok: true, message: slug };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Could not approve that idea." };
+    return fail(e, "Could not approve that idea.");
   }
 }

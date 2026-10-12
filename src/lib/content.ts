@@ -8,28 +8,170 @@ import {
   type InboxItem,
   type InboxKind,
   type Message,
+  type Section,
 } from "./data";
-import { listPaths, readText, remove, writeText } from "./store";
+import { db } from "./supabase/admin";
 
-const CURRENT = "content/current.json";
-const HISTORY = "content/history/";
-const KEEP_VERSIONS = 40;
+// ---------- row <-> Content mapping ----------
+// Each list section is a table. `position` keeps the order the admin chose.
+type Row = Record<string, unknown>;
+const nul = <T>(v: T | null | undefined) => (v == null || v === "" ? undefined : v);
 
-/** Fill in anything missing (e.g. a section added after the content was first saved). */
-function normalize(raw: Partial<Content> | null): Content {
-  const c = { ...defaultContent, ...(raw ?? {}) } as Content;
-  c.site = { ...defaultContent.site, ...(raw?.site ?? {}) };
-  return c;
+type ListDef = { table: string; from: (r: Row) => Row; to: (o: Row) => Row };
+const lists: Record<
+  "stats" | "divisions" | "events" | "startups" | "listings" | "faculty" | "team",
+  ListDef
+> = {
+  stats: {
+    table: "stats",
+    from: (r: Row) => ({ uid: r.uid, value: r.value, label: r.label }),
+    to: (o: Row) => ({ uid: o.uid, value: o.value, label: o.label }),
+  },
+  divisions: {
+    table: "divisions",
+    from: (r: Row) => ({ uid: r.uid, name: r.name, line: r.line }),
+    to: (o: Row) => ({ uid: o.uid, name: o.name, line: o.line }),
+  },
+  events: {
+    table: "events",
+    from: (r: Row) => ({
+      uid: r.uid,
+      title: r.title,
+      date: r.date,
+      endDate: nul(r.end_date),
+      category: r.category,
+      summary: r.summary,
+      report: nul(r.report),
+      reportUrl: nul(r.report_url),
+    }),
+    to: (o: Row) => ({
+      uid: o.uid,
+      title: o.title,
+      date: o.date,
+      end_date: o.endDate ?? null,
+      category: o.category,
+      summary: o.summary,
+      report: o.report ?? null,
+      report_url: o.reportUrl ?? null,
+    }),
+  },
+  startups: {
+    table: "startups",
+    from: (r: Row) => ({
+      uid: r.uid,
+      slug: r.slug,
+      regId: r.reg_id,
+      name: r.name,
+      pitch: r.pitch,
+      category: r.category,
+      status: r.status,
+      stage: r.stage,
+      founder: r.founder,
+      problem: r.problem,
+      solution: r.solution,
+      photo: nul(r.photo),
+      website: nul(r.website),
+    }),
+    to: (o: Row) => ({
+      uid: o.uid,
+      slug: o.slug,
+      reg_id: o.regId,
+      name: o.name,
+      pitch: o.pitch,
+      category: o.category,
+      status: o.status,
+      stage: o.stage,
+      founder: o.founder,
+      problem: o.problem,
+      solution: o.solution,
+      photo: o.photo ?? null,
+      website: o.website ?? null,
+    }),
+  },
+  listings: {
+    table: "listings",
+    from: (r: Row) => ({
+      uid: r.uid,
+      startupSlug: r.startup_slug,
+      role: r.role,
+      skills: r.skills ?? [],
+      commitment: r.commitment,
+      compensation: r.compensation,
+    }),
+    to: (o: Row) => ({
+      uid: o.uid,
+      startup_slug: o.startupSlug,
+      role: o.role,
+      skills: o.skills,
+      commitment: o.commitment,
+      compensation: o.compensation,
+    }),
+  },
+  faculty: {
+    table: "faculty_members",
+    from: (r: Row) => ({ uid: r.uid, name: r.name, role: r.role, dept: nul(r.dept), photo: nul(r.photo) }),
+    to: (o: Row) => ({
+      uid: o.uid,
+      name: o.name,
+      role: o.role,
+      dept: o.dept ?? null,
+      photo: o.photo ?? null,
+    }),
+  },
+  team: {
+    table: "team_members",
+    from: (r: Row) => ({
+      uid: r.uid,
+      name: r.name,
+      role: r.role,
+      domain: nul(r.domain),
+      linkedin: nul(r.linkedin),
+      github: nul(r.github),
+      photo: nul(r.photo),
+    }),
+    to: (o: Row) => ({
+      uid: o.uid,
+      name: o.name,
+      role: o.role,
+      domain: o.domain ?? null,
+      linkedin: o.linkedin ?? null,
+      github: o.github ?? null,
+      photo: o.photo ?? null,
+    }),
+  },
+};
+
+type ListSection = keyof typeof lists;
+
+async function readList(section: ListSection) {
+  const l = lists[section];
+  const { data, error } = await db().from(l.table).select("*").order("position").order("uid");
+  if (error) throw new Error(`Could not read ${section}: ${error.message}`);
+  return (data as Row[]).map(l.from);
 }
 
 /** Always-fresh read, for the admin panel and for saving. */
 export async function readContent(): Promise<Content> {
-  const txt = await readText(CURRENT);
-  try {
-    return normalize(txt ? JSON.parse(txt) : null);
-  } catch {
-    return normalize(null);
-  }
+  const [settings, stats, events, startups, listings, divisions, faculty, team] = await Promise.all([
+    db().from("site_settings").select("data").eq("id", 1).maybeSingle(),
+    readList("stats"),
+    readList("events"),
+    readList("startups"),
+    readList("listings"),
+    readList("divisions"),
+    readList("faculty"),
+    readList("team"),
+  ]);
+  return {
+    site: { ...defaultContent.site, ...((settings.data?.data as object) ?? {}) },
+    stats,
+    events,
+    startups,
+    listings,
+    divisions,
+    faculty,
+    team,
+  } as unknown as Content;
 }
 
 /** Cached read for the public website. Admin saves call updateTag("content") to refresh it. */
@@ -40,84 +182,116 @@ export async function getContent(): Promise<Content> {
   return readContent();
 }
 
-/** Save a whole new content object and keep a copy in the version history. */
-// Labels are base64url-encoded so pathnames only contain characters that survive storage round-trips.
-const encodeLabel = (label: string) => Buffer.from(label.slice(0, 60)).toString("base64url");
-const decodeLabel = (raw: string) => {
-  if (raw.startsWith("b64-")) return Buffer.from(raw.slice(4), "base64url").toString("utf8");
-  try {
-    return decodeURIComponent(raw);
-  } catch {
-    return raw;
+/** Replace one whole section: upsert what is given (in order) and delete what was removed. */
+export async function writeSection<K extends Section>(section: K, value: Content[K]) {
+  const client = db();
+  if (section === "site") {
+    const { error } = await client.from("site_settings").upsert({ id: 1, data: value });
+    if (error) throw new Error(error.message);
+    return;
   }
-};
-const historyPath = (at: Date, label: string) =>
-  `${HISTORY}${at.toISOString().replace(/[:.]/g, "-")}__b64-${encodeLabel(label)}.json`;
-
-export async function writeContent(next: Content, label: string) {
-  // First save ever: keep the original website too, so even the very first change can be undone.
-  if (!(await listPaths(HISTORY)).length) {
-    await writeText(
-      historyPath(new Date(Date.now() - 1000), "Starting version"),
-      JSON.stringify(await readContent()),
-    );
+  const l = lists[section as ListSection];
+  const items = value as unknown as Row[];
+  if (items.length) {
+    const { error } = await client
+      .from(l.table)
+      .upsert(items.map((o, position) => ({ ...l.to(o), position })));
+    if (error) throw new Error(error.message);
   }
-  const body = JSON.stringify(next);
-  await writeText(CURRENT, body);
-  await writeText(historyPath(new Date(), label), body);
-  const versions = await listPaths(HISTORY);
-  await Promise.all(versions.slice(KEEP_VERSIONS).map((v) => remove(v.pathname)));
-}
-
-export async function listVersions() {
-  const versions = await listPaths(HISTORY);
-  return versions.map((v) => {
-    const file = v.pathname.slice(HISTORY.length).replace(/\.json$/, "");
-    const [, label = ""] = file.split("__");
-    return { pathname: v.pathname, savedAt: v.uploadedAt.toISOString(), label: decodeLabel(label) };
-  });
-}
-
-export async function readVersion(pathname: string): Promise<Content | null> {
-  if (!pathname.startsWith(HISTORY)) return null;
-  const txt = await readText(pathname);
-  try {
-    return txt ? normalize(JSON.parse(txt)) : null;
-  } catch {
-    return null;
-  }
+  const keep = items.map((o) => o.uid as string);
+  const del = client.from(l.table).delete();
+  const { error } = keep.length
+    ? await del.not("uid", "in", `(${keep.map((k) => `"${k}"`).join(",")})`)
+    : await del.neq("uid", "");
+  if (error) throw new Error(error.message);
 }
 
 // ---------- inbox ----------
-const inboxPath = (kind: InboxKind, id: string) => `inbox/${kind}/${id}.json`;
-
-export async function saveInboxItem(item: InboxItem) {
-  await writeText(inboxPath(item.kind, item.id), JSON.stringify(item));
-}
+const inbox = {
+  messages: { table: "messages" },
+  ideas: { table: "ideas" },
+  applications: { table: "applications" },
+} as const;
 
 type ItemOf = { messages: Message; ideas: Idea; applications: Application };
 
+const fromRow = (kind: InboxKind, r: Row) => {
+  const base = { kind, id: r.id as string, createdAt: new Date(r.created_at as string).toISOString() };
+  if (kind === "messages")
+    return {
+      ...base,
+      name: r.name,
+      email: r.email,
+      role: r.role,
+      body: r.body,
+      status: r.status,
+      note: nul(r.note),
+    };
+  if (kind === "ideas")
+    return {
+      ...base,
+      name: r.name,
+      pitch: r.pitch,
+      category: r.category,
+      problem: r.problem,
+      solution: r.solution,
+      team: r.team,
+      email: r.email,
+      status: r.status,
+      score: nul(r.score),
+      comments: nul(r.comments),
+      startupSlug: nul(r.startup_slug),
+      reviewedBy: nul(r.reviewed_by),
+      reviewedAt: nul(r.reviewed_at),
+    };
+  return {
+    ...base,
+    listingUid: r.listing_uid ?? "",
+    role: r.role,
+    startup: r.startup,
+    name: r.name,
+    email: r.email,
+    pitch: r.pitch,
+    status: r.status,
+  };
+};
+
+const toRow = (item: InboxItem): Row => {
+  const { kind, id, createdAt, ...rest } = item as InboxItem & Record<string, unknown>;
+  void kind;
+  const row: Row = { id, created_at: createdAt };
+  for (const [k, v] of Object.entries(rest)) {
+    if (k === "listingUid") row.listing_uid = v || null;
+    else if (k === "startupSlug") row.startup_slug = v ?? null;
+    else if (k === "reviewedBy") row.reviewed_by = v ?? null;
+    else if (k === "reviewedAt") row.reviewed_at = v ?? null;
+    else row[k] = v ?? null;
+  }
+  return row;
+};
+
+export async function saveInboxItem(item: InboxItem) {
+  const { error } = await db().from(inbox[item.kind].table).upsert(toRow(item));
+  if (error) throw new Error(error.message);
+}
+
 export async function getInboxItem<K extends InboxKind>(kind: K, id: string): Promise<ItemOf[K] | null> {
-  const txt = await readText(inboxPath(kind, id));
-  return txt ? (JSON.parse(txt) as ItemOf[K]) : null;
+  const { data, error } = await db().from(inbox[kind].table).select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? (fromRow(kind, data) as unknown as ItemOf[K]) : null;
 }
 
 export async function deleteInboxItem(kind: InboxKind, id: string) {
-  await remove(inboxPath(kind, id));
+  const { error } = await db().from(inbox[kind].table).delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 export async function listInbox<K extends InboxKind>(kind: K): Promise<ItemOf[K][]> {
-  const paths = await listPaths(`inbox/${kind}/`);
-  const items: ItemOf[K][] = [];
-  await Promise.all(
-    paths.map(async (p) => {
-      const txt = await readText(p.pathname);
-      try {
-        if (txt) items.push(JSON.parse(txt) as ItemOf[K]);
-      } catch {
-        /* skip unreadable item */
-      }
-    }),
-  );
-  return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const { data, error } = await db()
+    .from(inbox[kind].table)
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(error.message);
+  return (data as Row[]).map((r) => fromRow(kind, r)) as unknown as ItemOf[K][];
 }

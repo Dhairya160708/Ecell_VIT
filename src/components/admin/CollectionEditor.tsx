@@ -153,7 +153,7 @@ export function CollectionEditor<T extends Item>({
     if (
       !(await confirm({
         title: `Delete “${name}”?`,
-        body: `It will be removed from the website. You can press Undo straight after, or restore it later from History.`,
+        body: `It will be removed from the website. You can press Undo straight after.`,
         confirm: "Delete",
         danger: true,
       }))

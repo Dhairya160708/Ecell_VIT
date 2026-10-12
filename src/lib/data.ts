@@ -14,16 +14,23 @@ export type Startup = {
   problem: string;
   solution: string;
   photo?: string;
+  /** The startup's live site. When set, the startup card links out to it. */
+  website?: string;
 };
 
 export type EventItem = {
   uid: string;
   title: string;
+  /** yyyy-mm-dd. Status (Upcoming/Ongoing/Past) is derived from the dates, see lib/events.ts. */
   date: string;
-  /* yyyy-mm-dd */ category: string;
-  status: "Ongoing" | "Upcoming" | "Past";
+  /** Last day of a multi-day event (yyyy-mm-dd). Defaults to `date`. */
+  endDate?: string;
+  category: string;
   summary: string;
+  /** Short highlights line shown on past events. */
   report?: string;
+  /** Link to the full report. "Read report" only appears when this is set. */
+  reportUrl?: string;
 };
 
 export type Listing = {
@@ -35,7 +42,17 @@ export type Listing = {
   compensation: "Paid" | "Equity" | "Unpaid";
 };
 
-export type Person = { uid: string; name: string; role: string; dept?: string; photo?: string };
+export type Person = {
+  uid: string;
+  name: string;
+  role: string;
+  dept?: string;
+  /** Team members: the team/domain they belong to, and their profiles. */
+  domain?: string;
+  linkedin?: string;
+  github?: string;
+  photo?: string;
+};
 export type Division = { uid: string; name: string; line: string };
 export type Stat = { uid: string; value: string; label: string };
 
@@ -187,7 +204,6 @@ export const defaultContent: Content = {
       title: "Startup Launchpad",
       date: "2026-09-18",
       category: "Founder workshop",
-      status: "Ongoing",
       summary:
         "A hands-on sprint that takes student ideas from raw problem statements to confident, investor-ready pitches.",
     },
@@ -196,7 +212,6 @@ export const defaultContent: Content = {
       title: "E-Summit 2026",
       date: "2026-10-09",
       category: "Flagship summit",
-      status: "Upcoming",
       summary:
         "A day of founder stories, live pitching, networking, and practical conversations with the Mumbai startup ecosystem.",
     },
@@ -205,7 +220,6 @@ export const defaultContent: Content = {
       title: "Founder's Fireside",
       date: "2026-11-15",
       category: "Speaker session",
-      status: "Upcoming",
       summary:
         "An honest, no-slides conversation on finding product-market fit and building through uncertainty.",
     },
@@ -214,7 +228,6 @@ export const defaultContent: Content = {
       title: "Prototype Weekend",
       date: "2027-01-12",
       category: "Build sprint",
-      status: "Upcoming",
       summary:
         "A focused 48-hour build weekend pairing technical makers with business-minded student collaborators.",
     },
@@ -223,7 +236,6 @@ export const defaultContent: Content = {
       title: "Pitch Hunt",
       date: "2026-07-24",
       category: "Pitch competition",
-      status: "Past",
       summary:
         "Student teams pitched solutions to real-world problems before a panel of mentors and industry professionals.",
       report: "14 teams · 5 mentors · 3 winning ideas",
@@ -233,7 +245,6 @@ export const defaultContent: Content = {
       title: "Campus Founder Meetup",
       date: "2026-03-06",
       category: "Community",
-      status: "Past",
       summary:
         "A peer-led evening for student founders to exchange lessons, roadblocks, and useful connections.",
       report: "80 attendees · 12 demos · 6 collaborations",
@@ -333,6 +344,8 @@ export type Idea = {
   score?: number;
   comments?: string;
   startupSlug?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
 };
 export type Application = {
   kind: "applications";

@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { COOKIE, verifyToken } from "@/lib/session";
+import { currentFaculty } from "@/lib/auth";
 import { writeBinary } from "@/lib/store";
 import { makeUid } from "@/lib/data";
 
@@ -7,8 +6,7 @@ const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png",
 
 // Photos are resized in the browser before upload, so 4 MB is plenty.
 export async function POST(req: Request) {
-  if (!(await verifyToken((await cookies()).get(COOKIE)?.value)))
-    return Response.json({ error: "Please log in again." }, { status: 401 });
+  if (!(await currentFaculty())) return Response.json({ error: "Please log in again." }, { status: 401 });
   const file = (await req.formData()).get("file");
   if (!(file instanceof File)) return Response.json({ error: "No photo was received." }, { status: 400 });
   const ext = TYPES[file.type];

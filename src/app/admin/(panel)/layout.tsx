@@ -1,5 +1,7 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { currentFaculty } from "@/lib/auth";
 import { Shell } from "@/components/admin/Shell";
 import { listInbox } from "@/lib/content";
 
@@ -18,6 +20,13 @@ async function InboxBadge() {
   );
 }
 
+// Being signed in is not enough: only accounts listed in faculty_users get past this point.
+async function FacultyGate({ children }: { children: React.ReactNode }) {
+  await connection();
+  if (!(await currentFaculty())) redirect("/admin/login?denied=1");
+  return children;
+}
+
 export default function PanelLayout({ children }: { children: React.ReactNode }) {
   return (
     <Shell
@@ -27,7 +36,9 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
         </Suspense>
       }
     >
-      {children}
+      <Suspense fallback={null}>
+        <FacultyGate>{children}</FacultyGate>
+      </Suspense>
     </Shell>
   );
 }

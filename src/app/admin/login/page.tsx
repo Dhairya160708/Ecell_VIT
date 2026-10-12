@@ -6,14 +6,27 @@ import { login } from "@/app/actions/admin";
 import { Crest } from "@/components/Logo";
 
 function LoginForm() {
-  const next = useSearchParams().get("next") ?? "/admin";
+  const params = useSearchParams();
+  const next = params.get("next") ?? "/admin";
   const [error, action, pending] = useActionState(login, null);
   const [show, setShow] = useState(false);
   return (
     <form action={action} className="mt-8 space-y-4">
       <input type="hidden" name="next" value={next} />
+      <label htmlFor="email" className="block text-[15px] font-semibold text-white">
+        Faculty email
+      </label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        required
+        autoFocus
+        autoComplete="username"
+        className="w-full rounded-xl bg-white px-4 py-3.5 text-base text-[#1d1d1b] outline-none ring-2 ring-transparent focus:ring-[#c7a54f]"
+      />
       <label htmlFor="password" className="block text-[15px] font-semibold text-white">
-        Admin password
+        Password
       </label>
       <div className="relative">
         <input
@@ -21,7 +34,6 @@ function LoginForm() {
           name="password"
           type={show ? "text" : "password"}
           required
-          autoFocus
           autoComplete="current-password"
           className="w-full rounded-xl bg-white px-4 py-3.5 pr-12 text-base text-[#1d1d1b] outline-none ring-2 ring-transparent focus:ring-[#c7a54f]"
         />
@@ -49,11 +61,6 @@ function LoginForm() {
         {pending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Lock className="h-5 w-5" />}
         {pending ? "Checking…" : "Log in"}
       </button>
-      {process.env.NODE_ENV !== "production" && (
-        <p className="text-center text-sm text-white/50">
-          Local preview: the password is <b className="text-white/80">admin</b>
-        </p>
-      )}
     </form>
   );
 }
@@ -73,7 +80,7 @@ export default function Login() {
           <LoginForm />
         </Suspense>
         <p className="mt-8 text-center text-sm text-white/45">
-          Forgot the password? Ask your E-Cell website coordinator.
+          Need access or forgot your password? Ask your E-Cell website coordinator.
         </p>
       </div>
     </main>

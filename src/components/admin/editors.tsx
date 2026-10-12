@@ -17,17 +17,13 @@ import {
   type Person,
   type Startup,
 } from "@/lib/data";
+import { eventStatus, sortEvents, todayIST } from "@/lib/events";
 import { CollectionEditor, type Field } from "./CollectionEditor";
 import { Badge, Btn } from "./ui";
 
 const opts = (pairs: [string, string][]) => pairs.map(([value, label]) => ({ value, label }));
 
 // ---------- events ----------
-const eventStatus = opts([
-  ["Upcoming", "Coming up"],
-  ["Ongoing", "Happening now"],
-  ["Past", "Already happened"],
-]);
 const eventFields: Field[] = [
   { key: "title", label: "Event name", required: true, max: 60, placeholder: "e.g. E-Summit 2026" },
   {
@@ -38,12 +34,10 @@ const eventFields: Field[] = [
     hint: "The day it starts. The website shows it as “09 OCT”.",
   },
   {
-    key: "status",
-    label: "Is it coming up, happening now, or over?",
-    type: "select",
-    required: true,
-    options: eventStatus,
-    hint: "Remember to switch this to “Already happened” after the event.",
+    key: "endDate",
+    label: "Last day (multi-day events only)",
+    type: "date",
+    hint: "Leave empty for a one-day event. The website works out “coming up / happening now / over” from the dates by itself.",
   },
   { key: "category", label: "Type of event", max: 40, placeholder: "e.g. Workshop, Talk, Competition" },
   {
@@ -60,6 +54,13 @@ const eventFields: Field[] = [
     max: 120,
     placeholder: "e.g. 80 attendees · 12 demos · 6 collaborations",
     hint: "Shown at the bottom of the card. Leave empty for upcoming events.",
+  },
+  {
+    key: "reportUrl",
+    label: "Link to the full report (optional)",
+    max: 300,
+    placeholder: "https://…",
+    hint: "A “Read report” link only appears on the card when this is filled in.",
   },
 ];
 const statusTone = { Upcoming: "gold", Ongoing: "green", Past: "gray" } as const;
@@ -79,7 +80,6 @@ export function EventsEditor({ items, autoNew }: { items: EventItem[]; autoNew?:
         title: "",
         date: new Date().toISOString().slice(0, 10),
         category: "",
-        status: "Upcoming",
         summary: "",
       })}
       summary={(e) => {
@@ -87,7 +87,7 @@ export function EventsEditor({ items, autoNew }: { items: EventItem[]; autoNew?:
         return {
           title: e.title,
           subtitle: `${day} ${month} · ${e.category || "Event"}`,
-          badge: <Badge tone={statusTone[e.status]}>{statusLabel[e.status]}</Badge>,
+          badge: <Badge tone={statusTone[eventStatus(e)]}>{statusLabel[eventStatus(e)]}</Badge>,
           href: "/events",
         };
       }}
@@ -95,13 +95,10 @@ export function EventsEditor({ items, autoNew }: { items: EventItem[]; autoNew?:
         <Btn
           icon={<ArrowDownUp className="h-4 w-4" />}
           onClick={() =>
-            save(
-              [...list].sort((a, b) => a.date.localeCompare(b.date)),
-              "Events sorted by date.",
-            )
+            save(sortEvents(list, todayIST()), "Events sorted: happening now, then coming up, then past.")
           }
         >
-          Sort by date
+          Sort for the website
         </Btn>
       )}
     />
@@ -117,6 +114,13 @@ const startupFields: Field[] = [
     label: "Photo or logo",
     type: "image",
     hint: "Shown on the startup's card. A founder photo or product shot works well.",
+  },
+  {
+    key: "website",
+    label: "Live website",
+    max: 300,
+    placeholder: "https://…",
+    hint: "The startup's real site. When set, its card links out to it (opens in a new tab).",
   },
   {
     key: "pitch",
@@ -308,12 +312,20 @@ export function TeamEditor({ items }: { items: Person[] }) {
       fields={[
         { key: "name", label: "Name", required: true, max: 60 },
         { key: "photo", label: "Photo", type: "image", shape: "portrait" },
-        { key: "role", label: "Role", required: true, max: 50, placeholder: "e.g. Tech Team · Research" },
+        { key: "role", label: "Role", required: true, max: 50, placeholder: "e.g. Lead, Member" },
+        { key: "domain", label: "Domain / team", max: 40, placeholder: "e.g. Tech, Events, PR" },
+        { key: "linkedin", label: "LinkedIn", max: 300, placeholder: "https://www.linkedin.com/in/…" },
+        { key: "github", label: "GitHub", max: 300, placeholder: "https://github.com/…" },
       ]}
       emptyIcon={<Users className="h-6 w-6" />}
       emptyText="Add the students who run E-Cell."
       blank={() => ({ name: "", role: "" })}
-      summary={(p) => ({ title: p.name, subtitle: p.role, image: p.photo ?? "", href: "/#people" })}
+      summary={(p) => ({
+        title: p.name,
+        subtitle: [p.domain, p.role].filter(Boolean).join(" · "),
+        image: p.photo ?? "",
+        href: "/#people",
+      })}
     />
   );
 }

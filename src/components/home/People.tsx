@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react";
 import type { Person } from "@/lib/data";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Reveal } from "../ui/Reveal";
@@ -77,7 +78,33 @@ export function People({ faculty, team }: { faculty: Person[]; team: Person[] })
                     )}
                   </div>
                   <h3 className="mt-10 font-display text-4xl text-ivory">{m.name}</h3>
-                  <p className="mt-2 text-sm text-muted">{m.role}</p>
+                  <p className="mt-2 text-sm text-muted">{[m.domain, m.role].filter(Boolean).join(" · ")}</p>
+                  {(m.linkedin || m.github) && (
+                    <p className="mt-5 flex gap-3">
+                      {m.linkedin && (
+                        <a
+                          href={m.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${m.name} on LinkedIn`}
+                          className="flex items-center gap-1 font-grotesk text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-gold"
+                        >
+                          LinkedIn <ArrowUpRight className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+                      {m.github && (
+                        <a
+                          href={m.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${m.name} on GitHub`}
+                          className="flex items-center gap-1 font-grotesk text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-gold"
+                        >
+                          GitHub <ArrowUpRight className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+                    </p>
+                  )}
                   <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gold transition-all duration-500 group-hover:w-full" />
                 </article>
               </Reveal>

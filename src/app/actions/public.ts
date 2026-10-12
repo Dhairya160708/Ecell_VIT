@@ -1,5 +1,6 @@
 "use server";
-import { readContent, saveInboxItem } from "@/lib/content";
+import { saveInboxItem } from "@/lib/content";
+import { db } from "@/lib/supabase/admin";
 import { makeUid } from "@/lib/data";
 
 export type FormResult = { ok: true } | { ok: false; error: string };
@@ -13,7 +14,17 @@ const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 const isBot = (form: FormData) => !!f(form, "website");
 const now = () => new Date().toISOString();
 
-export async function sendMessage(form: FormData): Promise<FormResult> {
+// Database trouble must never leave the visitor hanging: log it and return a readable error.
+async function safe(fn: () => Promise<FormResult>): Promise<FormResult> {
+  try {
+    return await fn();
+  } catch (e) {
+    console.error("form submission failed", e);
+    return { ok: false, error: "Something went wrong on our side. Please try again in a moment." };
+  }
+}
+
+async function sendMessageImpl(form: FormData): Promise<FormResult> {
   if (isBot(form)) return { ok: true };
   const name = f(form, "name", 100),
     email = f(form, "email", 120),
@@ -34,7 +45,7 @@ export async function sendMessage(form: FormData): Promise<FormResult> {
   return { ok: true };
 }
 
-export async function submitIdea(form: FormData): Promise<FormResult> {
+async function submitIdeaImpl(form: FormData): Promise<FormResult> {
   if (isBot(form)) return { ok: true };
   const idea = {
     name: f(form, "name", 60),
@@ -52,7 +63,7 @@ export async function submitIdea(form: FormData): Promise<FormResult> {
   return { ok: true };
 }
 
-export async function applyToListing(form: FormData): Promise<FormResult> {
+async function applyToListingImpl(form: FormData): Promise<FormResult> {
   if (isBot(form)) return { ok: true };
   const listingUid = f(form, "listingUid", 40),
     name = f(form, "name", 100),
@@ -60,16 +71,20 @@ export async function applyToListing(form: FormData): Promise<FormResult> {
     pitch = f(form, "pitch", 2000);
   if (!name || !pitch) return { ok: false, error: "Please add your name and a short pitch." };
   if (!emailOk(email)) return { ok: false, error: "That email address doesn't look right." };
-  const content = await readContent();
-  const listing = content.listings.find((l) => l.uid === listingUid);
+  const { data: listing } = await db()
+    .from("listings")
+    .select("role,startup_slug,startups(name)")
+    .eq("uid", listingUid)
+    .maybeSingle();
   if (!listing) return { ok: false, error: "This role is no longer open." };
-  const startup = content.startups.find((s) => s.slug === listing.startupSlug)?.name ?? listing.startupSlug;
+  const startups = listing.startups as unknown as { name: string } | null;
+  const startup = startups?.name ?? listing.startup_slug;
   await saveInboxItem({
     kind: "applications",
     id: makeUid("a"),
     createdAt: now(),
     listingUid,
-    role: listing.role,
+    role: listing.role as string,
     startup,
     name,
     email,
@@ -77,4 +92,14 @@ export async function applyToListing(form: FormData): Promise<FormResult> {
     status: "New",
   });
   return { ok: true };
+}
+
+export async function sendMessage(form: FormData) {
+  return safe(() => sendMessageImpl(form));
+}
+export async function submitIdea(form: FormData) {
+  return safe(() => submitIdeaImpl(form));
+}
+export async function applyToListing(form: FormData) {
+  return safe(() => applyToListingImpl(form));
 }

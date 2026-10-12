@@ -49,3 +49,6 @@ next-env.d.ts
 # local logs
 dev.log
 !.env.example
+
+# supabase CLI link state
+supabase/.temp

@@ -1,10 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { COOKIE, verifyToken } from "@/lib/session";
+import { createServerClient } from "@supabase/ssr";
 
-// Send anyone without a valid admin session to the login page.
-// (Every admin server action and upload route checks the session again on its own.)
+// Send anyone who isn't signed in to the login page, and keep the Supabase session cookie fresh.
+// (The admin layout, every admin server action and the upload route also check that the account is faculty.)
 export async function proxy(req: NextRequest) {
-  if (await verifyToken(req.cookies.get(COOKIE)?.value)) return NextResponse.next();
+  let res = NextResponse.next({ request: req });
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => req.cookies.getAll(),
+        setAll: (list) => {
+          list.forEach(({ name, value }) => req.cookies.set(name, value));
+          res = NextResponse.next({ request: req });
+          list.forEach(({ name, value, options }) => res.cookies.set(name, value, options));
+        },
+      },
+    },
+  );
+  const { data } = await supabase.auth.getUser();
+  if (data.user) return res;
   const url = new URL("/admin/login", req.url);
   if (req.nextUrl.pathname !== "/admin") url.searchParams.set("next", req.nextUrl.pathname);
   return NextResponse.redirect(url);

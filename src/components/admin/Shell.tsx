@@ -6,7 +6,6 @@ import {
   BriefcaseBusiness,
   CalendarDays,
   ExternalLink,
-  History,
   Home,
   Inbox,
   LogOut,
@@ -29,7 +28,6 @@ const nav = [
   { href: "/admin/people", label: "People", icon: Users },
   { href: "/admin/divisions", label: "Divisions", icon: Shield },
   { href: "/admin/site", label: "Website text", icon: Type },
-  { href: "/admin/history", label: "History & undo", icon: History },
 ];
 
 export function Shell({ badge, children }: { badge: React.ReactNode; children: React.ReactNode }) {
