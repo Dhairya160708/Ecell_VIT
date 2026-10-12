@@ -25,6 +25,8 @@ export const startupCategories = [
   "EdTech",
   "Community",
   "SaaS",
+  "Developer Tools",
+  "FoodTech",
   "Hardware",
   "Other",
 ];
