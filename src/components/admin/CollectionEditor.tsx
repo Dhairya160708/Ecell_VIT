@@ -21,7 +21,7 @@ export type Field = {
   shape?: "wide" | "portrait";
 };
 
-export type Summary = {
+type Summary = {
   title: string;
   subtitle?: string;
   image?: string;

@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import {
-  defaultContent,
+  defaultSite,
   type Application,
   type Content,
   type Idea,
@@ -163,7 +163,7 @@ export async function readContent(): Promise<Content> {
     readList("team"),
   ]);
   return {
-    site: { ...defaultContent.site, ...((settings.data?.data as object) ?? {}) },
+    site: { ...defaultSite, ...((settings.data?.data as object) ?? {}) },
     stats,
     events,
     startups,
