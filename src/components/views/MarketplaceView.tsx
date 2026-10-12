@@ -9,7 +9,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
 import { applyToListing } from "@/server/actions/public";
 import type { Listing } from "@/types/content";
-import { useFocusTrap } from "@/lib/useFocusTrap";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 const field =
   "w-full border border-line bg-surface px-4 py-3 text-sm outline-none transition focus:border-gold focus:shadow-[0_0_0_4px_var(--gold-soft)]";

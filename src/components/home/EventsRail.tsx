@@ -3,7 +3,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import type { EventItem } from "@/types/content";
 import { sortEvents } from "@/lib/events";
-import { useToday } from "@/lib/useToday";
+import { useToday } from "@/hooks/use-today";
 import { EventCard } from "../EventCard";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Button } from "../ui/Button";

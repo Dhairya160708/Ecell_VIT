@@ -1,6 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import { todayIST } from "./events";
+import { todayIST } from "../lib/events";
 
 /**
  * Today's date (campus time) from the browser's clock. It is null while the page is prerendered, because the

@@ -4,7 +4,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { dayMonth } from "@/lib/utils";
 import { type EventItem } from "@/types/content";
 import { eventHref, eventStatus } from "@/lib/events";
-import { useToday } from "@/lib/useToday";
+import { useToday } from "@/hooks/use-today";
 
 const badge = {
   Ongoing: "bg-moss/25 text-[#8fd1ac]",
