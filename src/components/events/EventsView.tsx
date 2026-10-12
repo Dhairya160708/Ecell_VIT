@@ -1,8 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { PageHeader } from "@/components/PageHeader";
-import { EventCard } from "@/components/EventCard";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { EventCard } from "@/components/events/EventCard";
 import type { EventItem } from "@/types/content";
 import { eventStatus, sortEvents } from "@/lib/events";
 import { useToday } from "@/hooks/use-today";

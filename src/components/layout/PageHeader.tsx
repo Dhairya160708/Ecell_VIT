@@ -1,5 +1,5 @@
-import { Reveal } from "./ui/Reveal";
-import { Eyebrow } from "./ui/Eyebrow";
+import { Reveal } from "../ui/Reveal";
+import { Eyebrow } from "../ui/Eyebrow";
 import { Crest } from "./Logo";
 
 export function PageHeader({

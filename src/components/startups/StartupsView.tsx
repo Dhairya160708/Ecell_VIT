@@ -2,8 +2,8 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search } from "lucide-react";
-import { PageHeader } from "@/components/PageHeader";
-import { StartupCard } from "@/components/StartupCard";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { StartupCard } from "@/components/startups/StartupCard";
 import type { Startup } from "@/types/content";
 
 const statuses = ["All", "Idea", "Building", "Launched"];

@@ -1,4 +1,4 @@
-import { ContactView } from "@/components/views/ContactView";
+import { ContactView } from "@/components/contact/ContactView";
 import { getContent } from "@/server/content";
 
 export default async function Contact() {

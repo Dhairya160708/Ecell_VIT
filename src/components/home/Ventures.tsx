@@ -1,5 +1,5 @@
 import type { Startup } from "@/types/content";
-import { StartupCard } from "../StartupCard";
+import { StartupCard } from "../startups/StartupCard";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Reveal } from "../ui/Reveal";
 import { Button } from "../ui/Button";

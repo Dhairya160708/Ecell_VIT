@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
-import { Crest } from "../Logo";
+import { Crest } from "../layout/Logo";
 import { Button } from "../ui/Button";
 
 const ease = [0.22, 1, 0.36, 1] as const;

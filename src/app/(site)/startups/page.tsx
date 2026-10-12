@@ -1,4 +1,4 @@
-import { StartupsView } from "@/components/views/StartupsView";
+import { StartupsView } from "@/components/startups/StartupsView";
 import { getContent } from "@/server/content";
 
 export default async function Startups() {

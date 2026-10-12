@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
-import { Button } from "./ui/Button";
+import { Button } from "../ui/Button";
 
 const links = [
   ["Events", "/events"],

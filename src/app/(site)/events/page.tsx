@@ -1,4 +1,4 @@
-import { EventsView } from "@/components/views/EventsView";
+import { EventsView } from "@/components/events/EventsView";
 import { getContent } from "@/server/content";
 
 export default async function Events() {

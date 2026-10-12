@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { PageHeader } from "@/components/PageHeader";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { submitIdea } from "@/server/actions/public";
 import { startupCategories } from "@/lib/constants";

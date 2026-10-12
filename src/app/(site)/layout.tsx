@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import { Nav } from "@/components/Nav";
-import { Footer } from "@/components/Footer";
-import { Intro } from "@/components/Intro";
+import { Nav } from "@/components/layout/Nav";
+import { Footer } from "@/components/layout/Footer";
+import { Intro } from "@/components/layout/Intro";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { getContent } from "@/server/content";
 

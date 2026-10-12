@@ -1,4 +1,4 @@
-import { Crest } from "../Logo";
+import { Crest } from "../layout/Logo";
 import { Reveal } from "../ui/Reveal";
 import { Button } from "../ui/Button";
 

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { MarketplaceView } from "@/components/views/MarketplaceView";
+import { MarketplaceView } from "@/components/marketplace/MarketplaceView";
 import { getContent } from "@/server/content";
 
 export default async function Marketplace() {

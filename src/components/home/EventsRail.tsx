@@ -4,7 +4,7 @@ import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 import type { EventItem } from "@/types/content";
 import { sortEvents } from "@/lib/events";
 import { useToday } from "@/hooks/use-today";
-import { EventCard } from "../EventCard";
+import { EventCard } from "../events/EventCard";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Button } from "../ui/Button";
 

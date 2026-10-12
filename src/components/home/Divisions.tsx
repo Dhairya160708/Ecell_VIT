@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import type { Division } from "@/types/content";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Reveal } from "../ui/Reveal";
-import { Crest } from "../Logo";
+import { Crest } from "../layout/Logo";
 
 const numberWord = (n: number) =>
   ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"][n] ?? String(n);

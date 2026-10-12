@@ -17,7 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { logout } from "@/server/actions/admin";
-import { Crest } from "@/components/Logo";
+import { Crest } from "@/components/layout/Logo";
 
 const nav = [
   { href: "/admin", label: "Home", icon: Home },

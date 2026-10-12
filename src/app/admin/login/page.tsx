@@ -3,7 +3,7 @@ import { Suspense, useActionState, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2, Lock } from "lucide-react";
 import { login } from "@/server/actions/admin";
-import { Crest } from "@/components/Logo";
+import { Crest } from "@/components/layout/Logo";
 
 function LoginForm() {
   const params = useSearchParams();
