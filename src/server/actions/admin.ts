@@ -141,6 +141,35 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
       dept: str(o.dept, 80),
       photo: media(o.photo),
     })),
+  posts: (v) => {
+    const seen = new Set<string>();
+    return arr(v).map((o) => {
+      let slug = slugify(str(o.slug) || str(o.title));
+      while (seen.has(slug)) slug = `${slug}-2`;
+      seen.add(slug);
+      return {
+        uid: str(o.uid, 40) || makeUid("bp"),
+        slug,
+        title: str(o.title, 120),
+        summary: str(o.summary, 300),
+        body: str(o.body, 20000),
+        author: str(o.author, 80),
+        date: /^\d{4}-\d{2}-\d{2}$/.test(str(o.date)) ? str(o.date) : new Date().toISOString().slice(0, 10),
+        cover: media(o.cover),
+      };
+    });
+  },
+  grants: (v) =>
+    arr(v).map((o) => ({
+      uid: str(o.uid, 40) || makeUid("gr"),
+      name: str(o.name, 120),
+      agency: str(o.agency, 120),
+      amount: str(o.amount, 80),
+      deadline: str(o.deadline, 80),
+      eligibility: str(o.eligibility, 400),
+      summary: str(o.summary, 600),
+      url: link(o.url),
+    })),
   team: (v) =>
     arr(v).map((o) => ({
       uid: str(o.uid, 40) || makeUid("tm"),

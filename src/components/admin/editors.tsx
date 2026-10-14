@@ -3,14 +3,24 @@ import {
   ArrowDownUp,
   BriefcaseBusiness,
   CalendarDays,
+  Landmark,
   GraduationCap,
+  Newspaper,
   Rocket,
   Shield,
   Users,
 } from "lucide-react";
 import { dayMonth } from "@/lib/utils";
 import { startupCategories } from "@/lib/constants";
-import { type Division, type EventItem, type Listing, type Person, type Startup } from "@/types/content";
+import {
+  type BlogPost,
+  type Division,
+  type EventItem,
+  type Grant,
+  type Listing,
+  type Person,
+  type Startup,
+} from "@/types/content";
 import { eventStatus, sortEvents, todayIST } from "@/lib/events";
 import { CollectionEditor, type Field } from "./CollectionEditor";
 import { Badge, Btn } from "./ui";
@@ -353,6 +363,114 @@ export function DivisionsEditor({ items }: { items: Division[] }) {
       emptyText="Divisions appear in the gold ribbons and the expanding panels on the home page."
       blank={() => ({ name: "", line: "" })}
       summary={(d) => ({ title: d.name, subtitle: d.line, href: "/" })}
+    />
+  );
+}
+
+// ---------- blog ----------
+export function BlogEditor({ items, autoNew }: { items: BlogPost[]; autoNew?: boolean }) {
+  return (
+    <CollectionEditor<BlogPost>
+      section="posts"
+      items={items}
+      noun="post"
+      autoNew={autoNew}
+      fields={[
+        { key: "title", label: "Title", required: true, max: 120 },
+        { key: "author", label: "Written by", max: 80, placeholder: "e.g. Prof. A. Sharma" },
+        { key: "date", label: "Publish date", type: "date", required: true },
+        {
+          key: "cover",
+          label: "Cover image",
+          type: "image",
+          hint: "Shown on the blog list and at the top of the post.",
+        },
+        {
+          key: "summary",
+          label: "Short summary",
+          type: "textarea",
+          rows: 2,
+          required: true,
+          max: 300,
+          hint: "Shown on the blog list.",
+        },
+        {
+          key: "body",
+          label: "Post",
+          type: "textarea",
+          rows: 14,
+          required: true,
+          max: 20000,
+          hint: "Leave a blank line between paragraphs. A post goes live on the website as soon as you save it.",
+        },
+      ]}
+      emptyIcon={<Newspaper className="h-6 w-6" />}
+      emptyText="Posts you write here appear on the Blog page. Only faculty logged in to this panel can publish."
+      blank={() => ({
+        slug: "",
+        title: "",
+        summary: "",
+        body: "",
+        author: "",
+        date: new Date().toISOString().slice(0, 10),
+      })}
+      summary={(p) => {
+        const { day, month } = dayMonth(p.date);
+        return {
+          title: p.title,
+          subtitle: `${day} ${month} · ${p.author || "E-Cell"}`,
+          image: p.cover ?? "",
+          href: p.slug ? `/blog/${p.slug}` : "/blog",
+        };
+      }}
+    />
+  );
+}
+
+// ---------- government grants ----------
+export function GrantsEditor({ items, autoNew }: { items: Grant[]; autoNew?: boolean }) {
+  return (
+    <CollectionEditor<Grant>
+      section="grants"
+      items={items}
+      noun="grant"
+      autoNew={autoNew}
+      fields={[
+        {
+          key: "name",
+          label: "Scheme name",
+          required: true,
+          max: 120,
+          placeholder: "e.g. Startup India Seed Fund",
+        },
+        { key: "agency", label: "Run by", max: 120, placeholder: "e.g. DPIIT, Ministry of Commerce" },
+        { key: "amount", label: "Funding amount", max: 80, placeholder: "e.g. Up to ₹50 lakh" },
+        { key: "deadline", label: "Deadline", max: 80, placeholder: "e.g. Rolling, or 31 Dec 2026" },
+        {
+          key: "eligibility",
+          label: "Who can apply",
+          type: "textarea",
+          rows: 3,
+          max: 400,
+          placeholder: "e.g. DPIIT-recognised startups less than 2 years old",
+        },
+        { key: "summary", label: "What it is", type: "textarea", rows: 4, required: true, max: 600 },
+        {
+          key: "url",
+          label: "Official link",
+          max: 300,
+          placeholder: "https://…",
+          hint: "A “Learn more” button appears when this is filled in.",
+        },
+      ]}
+      emptyIcon={<Landmark className="h-6 w-6" />}
+      emptyText="List government schemes and grants that student founders can apply for."
+      blank={() => ({ name: "", agency: "", amount: "", deadline: "", eligibility: "", summary: "" })}
+      summary={(g) => ({
+        title: g.name,
+        subtitle: [g.agency, g.amount].filter(Boolean).join(" · "),
+        href: "/grants",
+      })}
     />
   );
 }
