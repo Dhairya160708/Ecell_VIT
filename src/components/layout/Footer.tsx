@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Mail, MapPin } from "lucide-react";
 import { Logo } from "./Logo";
+import { WhatsAppCta } from "./WhatsAppCta";
 import type { SiteText } from "@/types/content";
 
 const explore = [
@@ -105,6 +106,7 @@ export function Footer({ site }: { site: SiteText }) {
                   </span>
                 ),
               )}
+              <WhatsAppCta variant="footer" />
             </div>
           </div>
           <LinkList title="Explore" links={explore} />

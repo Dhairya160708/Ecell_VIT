@@ -4,6 +4,7 @@ import { defaultSite } from "@/lib/constants";
 import {
   type Application,
   type Content,
+  type Feedback,
   type Idea,
   type InboxItem,
   type InboxKind,
@@ -71,6 +72,7 @@ const lists: Record<
       solution: r.solution,
       photo: nul(r.photo),
       website: nul(r.website),
+      video: nul(r.video_url),
     }),
     to: (o: Row) => ({
       uid: o.uid,
@@ -86,6 +88,7 @@ const lists: Record<
       solution: o.solution,
       photo: o.photo ?? null,
       website: o.website ?? null,
+      video_url: o.video ?? null,
     }),
   },
   listings: {
@@ -345,4 +348,41 @@ export async function listInbox<K extends InboxKind>(kind: K): Promise<ItemOf[K]
     .limit(500);
   if (error) throw new Error(error.message);
   return (data as Row[]).map((r) => fromRow(kind, r)) as unknown as ItemOf[K][];
+}
+
+// ---------- startup feedback ----------
+const feedbackFrom = (r: Row): Feedback => ({
+  id: r.id as string,
+  startupSlug: r.startup_slug as string,
+  name: (r.name as string) ?? "",
+  body: r.body as string,
+  hidden: !!r.hidden,
+  createdAt: new Date(r.created_at as string).toISOString(),
+});
+
+/** Visible comments for one startup, newest first (what the public page shows). */
+export async function listPublicFeedback(slug: string): Promise<Feedback[]> {
+  const { data, error } = await db()
+    .from("startup_feedback")
+    .select("*")
+    .eq("startup_slug", slug)
+    .eq("hidden", false)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw new Error(error.message);
+  return (data as Row[]).map(feedbackFrom);
+}
+
+/** Every comment, hidden or not, with the startup's name (admin moderation). */
+export async function listAllFeedback(): Promise<(Feedback & { startupName: string })[]> {
+  const { data, error } = await db()
+    .from("startup_feedback")
+    .select("*,startups(name)")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(error.message);
+  return (data as Row[]).map((r) => ({
+    ...feedbackFrom(r),
+    startupName: (r.startups as { name: string } | null)?.name ?? (r.startup_slug as string),
+  }));
 }

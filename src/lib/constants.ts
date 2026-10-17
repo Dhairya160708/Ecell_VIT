@@ -17,6 +17,22 @@ export const defaultSite: SiteText = {
   linkedin: "",
 };
 
+/**
+ * WhatsApp community invite link. Set NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL (it is read at build time,
+ * so redeploy after changing it). Anything that isn't an https WhatsApp link is ignored, which hides the button.
+ */
+export const whatsappCommunityUrl = (() => {
+  const raw = process.env.NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL?.trim();
+  if (!raw) return undefined;
+  try {
+    const u = new URL(raw);
+    const ok = u.protocol === "https:" && (u.hostname === "wa.me" || u.hostname.endsWith("whatsapp.com"));
+    return ok ? u.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+})();
+
 export const startupCategories = [
   "AI / Productivity",
   "Climate Tech",

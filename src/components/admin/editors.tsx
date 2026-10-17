@@ -127,6 +127,13 @@ const startupFields: Field[] = [
     hint: "The startup's real site. When set, its card links out to it (opens in a new tab).",
   },
   {
+    key: "video",
+    label: "Pitch video link",
+    max: 300,
+    placeholder: "https://youtu.be/…",
+    hint: "A 1–2 minute pitch. YouTube, Vimeo or Google Drive links play on the startup's page. Leave blank for no video.",
+  },
+  {
     key: "pitch",
     label: "One-line pitch",
     type: "textarea",

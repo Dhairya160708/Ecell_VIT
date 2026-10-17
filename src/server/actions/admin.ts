@@ -112,6 +112,7 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
         solution: str(o.solution, 800),
         photo: media(o.photo),
         website: link(o.website),
+        video: link(o.video),
       };
     });
   },
@@ -280,5 +281,28 @@ export async function approveIdea(id: string): Promise<Result> {
     return { ok: true, message: slug };
   } catch (e) {
     return fail(e, "Could not approve that idea.");
+  }
+}
+
+// ---------- startup feedback moderation ----------
+export async function setFeedbackHidden(id: string, hidden: boolean): Promise<Result> {
+  try {
+    await requireFaculty();
+    const { error } = await db().from("startup_feedback").update({ hidden }).eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (e) {
+    return fail(e, "Could not update that comment.");
+  }
+}
+
+export async function deleteFeedback(id: string): Promise<Result> {
+  try {
+    await requireFaculty();
+    const { error } = await db().from("startup_feedback").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  } catch (e) {
+    return fail(e, "Could not delete that comment.");
   }
 }
