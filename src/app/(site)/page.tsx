@@ -13,7 +13,7 @@ export default async function Home() {
   const c = await getContent();
   return (
     <>
-      <Hero kicker={c.site.heroKicker} tagline={c.site.heroTagline} />
+      <Hero tagline={c.site.heroTagline} />
       <Manifesto text={c.site.manifesto} />
       <Ribbons words={c.divisions.map((d) => d.name)} />
       <AboutCell lead={c.site.aboutLead} body={c.site.aboutBody} stats={c.stats} />

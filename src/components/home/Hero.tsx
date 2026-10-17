@@ -1,192 +1,138 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
-import { Crest } from "../layout/Logo";
-import { Button } from "../ui/Button";
+import Image from "next/image";
+import { useEffect, useRef } from "react";
+import { ArrowDown } from "lucide-react";
 
-const ease = [0.22, 1, 0.36, 1] as const;
-const line = "block whitespace-nowrap font-display text-[clamp(4.5rem,15.5vw,16rem)]";
+const clamp = (v: number) => Math.min(Math.max(v, 0), 1);
 
-/** Rotating seal text around the crest. */
-function Seal() {
-  const text = "DEDICATE YOUR HEART ✦ E-CELL VIT ✦ BEYOND THE WALLS ✦ ";
-  return (
-    <svg viewBox="0 0 200 200" className="animate-spin-slow absolute inset-0 h-full w-full" aria-hidden>
-      <defs>
-        <path id="seal" d="M100,100 m-88,0 a88,88 0 1,1 176,0 a88,88 0 1,1 -176,0" />
-      </defs>
-      <circle cx="100" cy="100" r="97" fill="none" stroke="rgba(199,165,79,.25)" strokeWidth=".4" />
-      <circle
-        cx="100"
-        cy="100"
-        r="80"
-        fill="none"
-        stroke="rgba(199,165,79,.18)"
-        strokeWidth=".4"
-        strokeDasharray="1 3"
-      />
-      <text fill="#c7a54f" fontSize="7.4" letterSpacing="3.1" fontFamily="var(--font-space)" fontWeight="700">
-        <textPath href="#seal">{text}</textPath>
-      </text>
-    </svg>
-  );
-}
-
-export function Hero({ kicker, tagline }: { kicker: string; tagline: string }) {
+/**
+ * Entrance corridor: scrolling pushes the camera down a dark hall, the doors slide open
+ * onto a burst of light, and the page proper takes over. All motion is driven by CSS
+ * variables written on the section (see `.entrance-*` in globals.css) so React never re-renders.
+ */
+export function Hero({ tagline }: { tagline: string }) {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  // Phones: the headline fills the screen width, so keep the scroll-apart travel small enough that it never leaves the viewport.
-  const [narrow, setNarrow] = useState(false);
-  useEffect(() => {
-    const mq = matchMedia("(max-width: 639px)");
-    const sync = () => setNarrow(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-  const travel = narrow ? 7 : 38;
-  const left = useTransform(p, [0, 1], ["0%", `-${travel}%`]);
-  const right = useTransform(p, [0, 1], ["0%", `${travel}%`]);
-  const crestScale = useTransform(p, [0, 0.7], [1, 1.9]);
-  const crestY = useTransform(p, [0, 1], ["0%", "40%"]);
-  const fade = useTransform(p, [0.35, 0.8], [1, 0]);
-  const floor = useTransform(p, [0, 1], ["0px", "400px"]);
 
-  // Crest tilts toward the cursor.
-  const mx = useMotionValue(0),
-    my = useMotionValue(0);
-  const rx = useSpring(useTransform(my, [-0.5, 0.5], [14, -14]), { stiffness: 120, damping: 16 });
-  const ry = useSpring(useTransform(mx, [-0.5, 0.5], [-18, 18]), { stiffness: 120, damping: 16 });
-  const onMove = (e: React.MouseEvent) => {
-    mx.set(e.clientX / innerWidth - 0.5);
-    my.set(e.clientY / innerHeight - 0.5);
-  };
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let target = 0;
+    let p = 0;
+    let raf = 0;
+
+    const frame = () => {
+      p += (target - p) * 0.14;
+      if (Math.abs(target - p) < 5e-4) p = target;
+
+      const door = clamp((p - 0.65) / 0.2);
+      const reveal = clamp((p - 0.62) / 0.23);
+      const corridor = 1 - clamp((p - 0.85) / 0.15);
+      const bloom = Math.max(1 - Math.abs(p - 0.78) / 0.12, 0);
+      const pulse = Math.max(1 - Math.abs(p - 0.53) / 0.13, 0);
+      const bob = Math.sin(p * Math.PI * 24) * 1.5 * (1 - door);
+
+      const set = (k: string, v: number | string) => el.style.setProperty(k, String(v));
+      set("--intro-progress", p);
+      set("--intro-travel", clamp(p / 0.65));
+      set("--intro-door", door);
+      set("--intro-reveal", reveal);
+      set("--intro-corridor-opacity", corridor);
+      set("--intro-bloom", bloom);
+      set("--intro-pulse", pulse);
+      set("--intro-bob", `${bob}px`);
+
+      raf = p === target ? 0 : requestAnimationFrame(frame);
+    };
+
+    const onScroll = () => {
+      const travel = Math.max(el.offsetHeight - innerHeight, 1);
+      target = clamp(-el.getBoundingClientRect().top / travel);
+      raf ||= requestAnimationFrame(frame);
+    };
+
+    onScroll();
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", onScroll);
+    return () => {
+      removeEventListener("scroll", onScroll);
+      removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   return (
-    <section ref={ref} className="relative h-[190vh]" onMouseMove={onMove}>
-      <div className="sticky top-0 flex h-svh flex-col overflow-hidden">
-        {/* atmosphere: forest glow, perspective floor, vignette */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_42%,rgba(47,107,77,.38),transparent_70%)]"
-        />
-        <div aria-hidden className="absolute inset-x-[-50%] bottom-0 h-[55%] [perspective:500px]">
-          <motion.div
-            style={{ backgroundPositionY: floor }}
-            className="bg-grid absolute inset-0 origin-bottom [transform:rotateX(62deg)] [mask-image:linear-gradient(to_top,#000_10%,transparent_85%)]"
-          />
-        </div>
-        <div
-          aria-hidden
-          className="absolute left-1/2 top-[42%] h-[60vmin] w-[60vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/20 blur-[100px]"
-        />
+    <section ref={ref} className="entrance">
+      <div className="entrance-sticky">
+        <div className="entrance-reveal" aria-hidden />
 
-        <motion.div style={{ opacity: fade }} className="relative z-10 flex flex-1 flex-col pt-28">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="mx-auto flex items-center gap-3 px-5 text-center font-grotesk text-[11px] font-bold uppercase tracking-[0.3em] text-gold sm:text-xs"
-          >
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
-            {kicker}
-          </motion.p>
-
-          {/* headline sits behind the crest */}
-          <h1 className="relative mt-6 flex flex-1 flex-col items-center justify-center text-center sm:mt-0">
-            <span className="sr-only">Create. Entrepreneur. Innovate.</span>
-            <motion.span
-              aria-hidden
-              style={{ x: left }}
-              initial={{ y: "60%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 1.1, ease }}
-              className={`${line} text-ivory`}
-            >
-              Create.
-            </motion.span>
-            <motion.span
-              aria-hidden
-              style={{ x: right }}
-              initial={{ y: "60%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.45, duration: 1.1, ease }}
-              className={`${line} text-metal`}
-            >
-              Entrepreneur.
-            </motion.span>
-            <motion.span
-              aria-hidden
-              style={{ x: left }}
-              initial={{ y: "60%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 1.1, ease }}
-              className={`${line} text-outline`}
-            >
-              Innovate.
-            </motion.span>
-
-            <motion.div
-              style={{ scale: crestScale, y: crestY }}
-              className="pointer-events-none relative z-30 order-first -mb-1 [perspective:900px] sm:absolute sm:left-1/2 sm:top-1/2 sm:mb-0 sm:-translate-x-1/2 sm:-translate-y-1/2"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.6, rotate: -8 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ delay: 0.5, duration: 1.4, ease }}
-                style={{ rotateX: rx, rotateY: ry }}
-                className="relative grid h-[min(46vmin,440px)] w-[min(46vmin,440px)] sm:h-[min(52vmin,440px)] sm:w-[min(52vmin,440px)] place-items-center"
-              >
-                {/* dark halo so the crest reads cleanly over the headline */}
-                <span
-                  aria-hidden
-                  className="absolute inset-[6%] rounded-full bg-[radial-gradient(circle,rgba(9,10,8,.92)_35%,rgba(9,10,8,.6)_55%,transparent_70%)]"
-                />
-                <Seal />
-                <Crest
-                  priority
-                  className="animate-float relative h-[64%] w-auto drop-shadow-[0_20px_60px_rgba(0,0,0,.9)]"
-                />
-              </motion.div>
-            </motion.div>
-          </h1>
-
-          <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-6 px-5 pb-10 sm:flex-row sm:items-end lg:px-8">
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.1, duration: 0.8 }}
-              className="max-w-sm text-base leading-relaxed text-muted sm:text-lg"
-            >
-              {tagline}
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.25, duration: 0.8 }}
-              className="flex flex-wrap gap-3"
-            >
-              <Button href="/startups">Explore ventures</Button>
-              <Button href="/submit" variant="ghost" arrow={false}>
-                Pitch your idea
-              </Button>
-            </motion.div>
+        <div className="entrance-corridor">
+          <div className="entrance-haze" aria-hidden />
+          <div className="entrance-dots" aria-hidden>
+            {Array.from({ length: 18 }, (_, i) => (
+              <span
+                key={i}
+                style={
+                  {
+                    "--dot-x": `${(i * 37 + 11) % 96}%`,
+                    "--dot-y": `${(i * 61 + 9) % 82}%`,
+                    "--dot-size": `${3 + (i % 4)}px`,
+                    "--dot-delay": `${(i % 7) * -0.8}s`,
+                    "--dot-drift": `${12 + (i % 5) * 7}px`,
+                  } as React.CSSProperties
+                }
+              />
+            ))}
           </div>
-        </motion.div>
+          <div className="entrance-ceiling" aria-hidden>
+            {Array.from({ length: 7 }, (_, i) => (
+              <span key={i} style={{ "--strip-index": i } as React.CSSProperties} />
+            ))}
+          </div>
+          {(["left", "right"] as const).map((side) => (
+            <div key={side} className={`entrance-wall entrance-wall-${side}`} aria-hidden>
+              {Array.from({ length: 4 }, (_, i) => (
+                <span key={i} style={{ "--panel-index": i } as React.CSSProperties} />
+              ))}
+            </div>
+          ))}
+          <div className="entrance-floor" aria-hidden>
+            {Array.from({ length: 7 }, (_, i) => (
+              <span key={i} style={{ "--floor-index": i } as React.CSSProperties} />
+            ))}
+          </div>
 
-        <motion.div
-          style={{ opacity: fade }}
-          className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 font-grotesk text-[10px] uppercase tracking-[0.3em] text-subtle lg:flex"
-        >
-          <span className="relative h-10 w-px overflow-hidden bg-line">
-            <motion.span
-              className="absolute inset-x-0 top-0 h-4 bg-gold"
-              animate={{ y: [-16, 40] }}
-              transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-            />
-          </span>
-          Scroll
-        </motion.div>
+          <div className="entrance-door-frame" aria-hidden />
+          <div className="entrance-door entrance-door-left" aria-hidden>
+            <span />
+          </div>
+          <div className="entrance-door entrance-door-right" aria-hidden>
+            <span />
+          </div>
+          <div className="entrance-seam" aria-hidden />
+          <div className="entrance-plaque" aria-hidden>
+            <Image src="/brand/poster.jpg" alt="" width={512} height={768} priority />
+          </div>
+
+          <div className="entrance-mainline">
+            <span className="sr-only">Create. Entrepreneur. Innovate.</span>
+            <span aria-hidden>Create.</span>
+            <span aria-hidden>Entrepreneur.</span>
+            <span aria-hidden>Innovate.</span>
+          </div>
+
+          <div className="entrance-identity">
+            <h1>E-CELL</h1>
+            <p className="entrance-campus">VIT WADALA</p>
+            <p className="entrance-tagline">{tagline}</p>
+            <div className="entrance-scroll-hint">
+              Scroll to enter
+              <ArrowDown className="size-4" aria-hidden />
+            </div>
+          </div>
+        </div>
+
+        <div className="entrance-bloom" aria-hidden />
       </div>
     </section>
   );

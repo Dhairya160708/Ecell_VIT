@@ -210,3 +210,427 @@ body {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
 }
+
+/* ---------- Home entrance: scroll-driven corridor ---------- */
+.entrance {
+  --intro-progress: 0;
+  --intro-travel: 0;
+  --intro-door: 0;
+  --intro-reveal: 0;
+  --intro-corridor-opacity: 1;
+  --intro-bloom: 0;
+  --intro-pulse: 0;
+  --intro-bob: 0px;
+  position: relative;
+  height: 220vh;
+  background: var(--bg);
+}
+.entrance-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background: #040504;
+}
+/* what the doors open onto */
+.entrance-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: var(--intro-reveal);
+  transform: scale(calc(1.15 - var(--intro-reveal) * 0.15));
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 48%, rgba(234, 217, 166, 0.28), transparent 70%),
+    radial-gradient(ellipse 80% 70% at 50% 50%, rgba(47, 107, 77, 0.35), transparent 75%), var(--bg);
+}
+.entrance-corridor {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--intro-corridor-opacity);
+  will-change: opacity;
+  background:
+    radial-gradient(at 50% 48%, rgba(38, 94, 63, 0.12), transparent 22%),
+    linear-gradient(#040706, #080c0a 62%, #020302);
+}
+.entrance-corridor::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.76), transparent 17% 83%, rgba(0, 0, 0, 0.76)),
+    radial-gradient(transparent 28%, rgba(0, 0, 0, 0.58));
+}
+.entrance-haze {
+  position: absolute;
+  z-index: 8;
+  left: 10%;
+  right: 10%;
+  bottom: -14%;
+  height: 46%;
+  border-radius: 50%;
+  filter: blur(55px);
+  background: rgba(144, 172, 151, 0.08);
+  opacity: calc(0.35 + var(--intro-pulse) * 0.45);
+  transform: scale(calc(1 + var(--intro-travel) * 0.7));
+}
+.entrance-dots {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  opacity: calc((1 - var(--intro-door)) * 0.72);
+}
+.entrance-dots span {
+  position: absolute;
+  top: var(--dot-y);
+  left: var(--dot-x);
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background: #4d8b5e;
+  opacity: 0.44;
+  box-shadow:
+    0 0 6px rgba(77, 139, 94, 0.8),
+    0 0 14px rgba(77, 139, 94, 0.35);
+  animation: entrance-dot-drift 5.8s var(--dot-delay) ease-in-out infinite alternate;
+}
+@keyframes entrance-dot-drift {
+  0% {
+    opacity: 0.18;
+    transform: translate(0) scale(0.75);
+  }
+  50% {
+    opacity: 0.68;
+    transform: translate3d(var(--dot-drift), calc(var(--dot-drift) * -0.65), 0) scale(1);
+  }
+  100% {
+    opacity: 0.28;
+    transform: translate3d(calc(var(--dot-drift) * -0.7), var(--dot-drift), 0) scale(0.82);
+  }
+}
+.entrance-ceiling {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 43%;
+  clip-path: polygon(0 0, 100% 0, 61% 100%, 39% 100%);
+  transform: scale(calc(1 + var(--intro-travel) * 1.85));
+  transform-origin: 50% 100%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 12%, rgba(199, 165, 79, 0.055) 12% 12.3%),
+    linear-gradient(#050706, #0e1812);
+}
+.entrance-ceiling span {
+  position: absolute;
+  top: calc(6% + var(--strip-index) * 12%);
+  left: calc(50% - (7% + var(--strip-index) * 2.5%));
+  width: calc(14% + var(--strip-index) * 5%);
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #f3eee0 22%, #fff 50%, #f3eee0 78%, transparent);
+  box-shadow: 0 0 calc(12px + var(--intro-pulse) * 20px) rgba(234, 217, 166, 0.68);
+  opacity: calc(0.48 + var(--intro-pulse) * 0.5);
+}
+.entrance-wall {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(7, 12, 9, 0.98), rgba(15, 28, 20, 0.86)),
+    repeating-linear-gradient(0deg, transparent 0 18%, rgba(199, 165, 79, 0.055) 18% 18.3%);
+}
+.entrance-wall-left {
+  left: 0;
+  clip-path: polygon(0 0, 100% 27%, 100% 72%, 0 100%);
+  transform: translateX(calc(var(--intro-travel) * -31%)) scale(calc(1 + var(--intro-travel) * 0.72));
+  transform-origin: 100%;
+}
+.entrance-wall-right {
+  right: 0;
+  clip-path: polygon(0 27%, 100% 0, 100% 100%, 0 72%);
+  transform: translateX(calc(var(--intro-travel) * 31%)) scale(calc(1 + var(--intro-travel) * 0.72));
+  transform-origin: 0;
+}
+.entrance-wall > span {
+  position: absolute;
+  top: calc(15% + var(--panel-index) * 20%);
+  width: clamp(30px, 5vw, 74px);
+  height: clamp(70px, 11vh, 120px);
+  border: 1px solid rgba(199, 165, 79, 0.28);
+  background: linear-gradient(90deg, rgba(38, 100, 67, 0.08), rgba(54, 133, 91, 0.38), rgba(38, 100, 67, 0.08));
+  box-shadow:
+    0 0 20px rgba(47, 107, 77, 0.14),
+    inset 0 0 18px rgba(234, 217, 166, 0.04);
+  opacity: calc(0.62 + var(--intro-pulse) * 0.28);
+}
+.entrance-wall-left > span {
+  left: calc(10% + var(--panel-index) * 9%);
+  transform: perspective(500px) rotateY(24deg);
+}
+.entrance-wall-right > span {
+  right: calc(10% + var(--panel-index) * 9%);
+  transform: perspective(500px) rotateY(-24deg);
+}
+.entrance-floor {
+  position: absolute;
+  z-index: 5;
+  bottom: 0;
+  left: -16%;
+  right: -16%;
+  height: 45%;
+  clip-path: polygon(39% 0, 61% 0, 100% 100%, 0 100%);
+  transform: scale(calc(1 + var(--intro-travel) * 1.48));
+  transform-origin: 50% 0;
+  background:
+    linear-gradient(180deg, rgba(199, 165, 79, calc(0.025 + var(--intro-pulse) * 0.09)), transparent 48%),
+    linear-gradient(180deg, #0b100d, #020302 74%);
+}
+.entrance-floor span {
+  position: absolute;
+  top: calc(var(--floor-index) * 15%);
+  left: calc(34% - var(--floor-index) * 5%);
+  width: calc(32% + var(--floor-index) * 10%);
+  height: 1px;
+  opacity: 0.7;
+  background: linear-gradient(90deg, transparent, rgba(199, 165, 79, 0.42), transparent);
+}
+.entrance-door-frame {
+  position: absolute;
+  z-index: 6;
+  top: 20%;
+  left: 50%;
+  width: 27%;
+  height: 58%;
+  border: 2px solid rgba(199, 165, 79, 0.66);
+  box-shadow:
+    0 0 36px rgba(199, 165, 79, 0.18),
+    inset 0 0 25px rgba(234, 217, 166, 0.08);
+  transform: translateX(-50%) scale(calc(1 + var(--intro-travel) * 1.15));
+}
+.entrance-door {
+  position: absolute;
+  z-index: 7;
+  top: 20.3%;
+  width: 13.3%;
+  height: 57.4%;
+  border: 1px solid rgba(199, 165, 79, 0.46);
+  box-shadow: 0 0 32px rgba(0, 0, 0, 0.84);
+  background:
+    linear-gradient(90deg, rgba(199, 165, 79, 0.09), transparent 20%),
+    repeating-linear-gradient(90deg, #101712 0 18%, #070b08 18% 20%);
+}
+.entrance-door span {
+  position: absolute;
+  inset: 7%;
+  border: 1px solid rgba(199, 165, 79, 0.25);
+}
+.entrance-door-left {
+  left: 36.7%;
+  transform: translateX(calc(var(--intro-door) * -112%)) scale(calc(1 + var(--intro-travel) * 1.15));
+  transform-origin: 100%;
+}
+.entrance-door-right {
+  right: 36.7%;
+  transform: translateX(calc(var(--intro-door) * 112%)) scale(calc(1 + var(--intro-travel) * 1.15));
+  transform-origin: 0;
+}
+.entrance-seam {
+  position: absolute;
+  z-index: 8;
+  top: 21%;
+  bottom: 22%;
+  left: 50%;
+  width: 2px;
+  background: #fff7dc;
+  box-shadow: 0 0 calc(9px + var(--intro-door) * 42px) calc(var(--intro-door) * 8px) rgba(255, 239, 188, 0.76);
+  opacity: calc(0.55 + var(--intro-door) * 0.45);
+  transform: scaleY(calc(1 + var(--intro-travel) * 1.15));
+}
+.entrance-plaque {
+  position: absolute;
+  z-index: 9;
+  top: 32%;
+  right: 17%;
+  width: clamp(104px, 12vw, 180px);
+  padding: 7px;
+  background: #080b08;
+  border: 1px solid rgba(199, 165, 79, 0.55);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.7),
+    0 0 18px rgba(199, 165, 79, 0.12);
+  opacity: calc(1 - var(--intro-door));
+  transform: perspective(600px) rotateY(-14deg) scale(calc(1 + var(--intro-travel) * 1.05));
+  transform-origin: 0;
+}
+.entrance-plaque img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: top;
+}
+.entrance-mainline {
+  position: absolute;
+  z-index: 25;
+  top: 21%;
+  left: 7%;
+  display: grid;
+  font-family: var(--font-bebas), sans-serif;
+  font-size: clamp(3.6rem, 7vw, 7.5rem);
+  line-height: 0.76;
+  letter-spacing: 0.015em;
+  opacity: clamp(0, calc(1 - var(--intro-progress) * 2.5), 1);
+  transform: translate3d(calc(var(--intro-progress) * -24vw), 0, 0);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+}
+/* children: sr-only label, then the three words */
+.entrance-mainline span:nth-child(2) {
+  color: #a88a45;
+}
+.entrance-mainline span:nth-child(3) {
+  background: linear-gradient(100deg, #c7a54f, #e6c673 45%, #b8943f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+.entrance-mainline span:nth-child(4) {
+  color: #8f7433;
+}
+.entrance-identity {
+  position: absolute;
+  z-index: 25;
+  bottom: 8%;
+  left: 50%;
+  text-align: center;
+  opacity: clamp(0, calc(1 - var(--intro-progress) * 2.5), 1);
+  transform: translate3d(calc(-50% + var(--intro-progress) * 24vw), calc(var(--intro-progress) * -12vh), 0);
+}
+.entrance-identity h1 {
+  margin: 0;
+  font-family: var(--font-bebas), sans-serif;
+  font-weight: 400;
+  font-size: clamp(4.5rem, 10vw, 9rem);
+  line-height: 0.72;
+  letter-spacing: 0.08em;
+  color: var(--ivory);
+  text-shadow: 0 8px 36px rgba(0, 0, 0, 0.9);
+}
+.entrance-campus {
+  margin: 17px 0 24px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.48em;
+  text-indent: 0.48em;
+  color: var(--gold-light);
+}
+.entrance-tagline {
+  max-width: 420px;
+  margin: 0 auto 22px;
+  font-size: clamp(0.74rem, 1vw, 0.9rem);
+  line-height: 1.65;
+  color: #c8ccc5;
+}
+.entrance-scroll-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9a9e98;
+}
+.entrance-scroll-hint svg {
+  color: var(--gold);
+  animation: entrance-arrow-bounce 1.6s ease-in-out infinite;
+}
+@keyframes entrance-arrow-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+.entrance-bloom {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: #fff7dc;
+  opacity: var(--intro-bloom);
+}
+
+@media (max-width: 767px) {
+  .entrance-dots span:nth-child(2n),
+  .entrance-ceiling span:nth-child(2n),
+  .entrance-wall > span:nth-child(n + 3),
+  .entrance-floor span:nth-child(2n) {
+    display: none;
+  }
+  .entrance-wall {
+    width: 58%;
+  }
+  .entrance-wall-left {
+    left: -8%;
+  }
+  .entrance-wall-right {
+    right: -8%;
+  }
+  .entrance-door-frame {
+    width: 40%;
+    height: 48%;
+    top: 27%;
+  }
+  .entrance-door {
+    width: 19.6%;
+    height: 47.4%;
+    top: 27.3%;
+  }
+  .entrance-door-left {
+    left: 30.4%;
+  }
+  .entrance-door-right {
+    right: 30.4%;
+  }
+  .entrance-seam {
+    top: 28%;
+    bottom: 25%;
+  }
+  .entrance-plaque {
+    width: 88px;
+    padding: 4px;
+    top: 34%;
+    right: 7%;
+  }
+  .entrance-mainline {
+    top: 18%;
+    left: 6%;
+    font-size: clamp(2.7rem, 13vw, 4.4rem);
+  }
+  .entrance-identity {
+    width: 90%;
+    bottom: 10%;
+    transform: translate3d(calc(-50% + var(--intro-progress) * 18vw), calc(var(--intro-progress) * -10vh), 0);
+  }
+  .entrance-tagline {
+    max-width: 280px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entrance {
+    height: 100svh;
+  }
+}
