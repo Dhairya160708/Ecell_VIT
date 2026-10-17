@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { ArrowDown } from "lucide-react";
+import { Crest } from "../layout/Logo";
 
 const clamp = (v: number) => Math.min(Math.max(v, 0), 1);
 
@@ -64,7 +65,9 @@ export function Hero({ tagline }: { tagline: string }) {
   return (
     <section ref={ref} className="entrance">
       <div className="entrance-sticky">
-        <div className="entrance-reveal" aria-hidden />
+        <div className="entrance-reveal" aria-hidden>
+          <Crest className="entrance-reveal-crest" />
+        </div>
 
         <div className="entrance-corridor">
           <div className="entrance-haze" aria-hidden />

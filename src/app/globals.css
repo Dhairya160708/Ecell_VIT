@@ -244,6 +244,16 @@ body {
     radial-gradient(ellipse 60% 50% at 50% 48%, rgba(234, 217, 166, 0.28), transparent 70%),
     radial-gradient(ellipse 80% 70% at 50% 50%, rgba(47, 107, 77, 0.35), transparent 75%), var(--bg);
 }
+.entrance-reveal {
+  display: grid;
+  place-items: center;
+}
+.entrance-reveal-crest {
+  height: min(48svh, 420px);
+  width: auto;
+  transform: scale(calc(0.8 + var(--intro-reveal) * 0.2));
+  filter: drop-shadow(0 0 50px rgba(234, 217, 166, 0.45)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.8));
+}
 .entrance-corridor {
   position: absolute;
   inset: 0;
