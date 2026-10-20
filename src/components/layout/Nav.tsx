@@ -60,7 +60,7 @@ export function Nav() {
           })}
         </ul>
         <div className="hidden xl:block">
-          <Button href="/contact" className="!px-5 !py-2.5">
+          <Button href="/submit" className="!px-5 !py-2.5">
             Join the regiment
           </Button>
         </div>

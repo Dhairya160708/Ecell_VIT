@@ -65,7 +65,7 @@ export function ImageField({
     }
   }
 
-  const aspect = shape === "portrait" ? "aspect-[4/5] max-w-[220px]" : "aspect-[16/10]";
+  const aspect = shape === "portrait" ? "aspect-[4/5] max-w-[220px]" : "aspect-[16/9]";
   return (
     <div>
       <input
