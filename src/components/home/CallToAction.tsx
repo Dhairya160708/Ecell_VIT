@@ -1,6 +1,7 @@
 import { Crest } from "../layout/Logo";
 import { Reveal } from "../ui/Reveal";
 import { Button } from "../ui/Button";
+import { WhatsAppCta } from "../layout/WhatsAppCta";
 
 export function CallToAction({ heading }: { heading: string }) {
   return (
@@ -25,6 +26,7 @@ export function CallToAction({ heading }: { heading: string }) {
           >
             Let&apos;s talk
           </Button>
+          <WhatsAppCta variant="banner" />
         </Reveal>
       </div>
     </section>

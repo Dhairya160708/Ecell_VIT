@@ -4,6 +4,7 @@ import { defaultSite } from "@/lib/constants";
 import {
   type Application,
   type Content,
+  type Feedback,
   type Idea,
   type InboxItem,
   type InboxKind,
@@ -19,7 +20,7 @@ const nul = <T>(v: T | null | undefined) => (v == null || v === "" ? undefined :
 
 type ListDef = { table: string; from: (r: Row) => Row; to: (o: Row) => Row };
 const lists: Record<
-  "stats" | "divisions" | "events" | "startups" | "listings" | "faculty" | "team",
+  "stats" | "divisions" | "events" | "startups" | "listings" | "faculty" | "team" | "posts" | "grants",
   ListDef
 > = {
   stats: {
@@ -71,6 +72,7 @@ const lists: Record<
       solution: r.solution,
       photo: nul(r.photo),
       website: nul(r.website),
+      video: nul(r.video_url),
     }),
     to: (o: Row) => ({
       uid: o.uid,
@@ -86,6 +88,7 @@ const lists: Record<
       solution: o.solution,
       photo: o.photo ?? null,
       website: o.website ?? null,
+      video_url: o.video ?? null,
     }),
   },
   listings: {
@@ -139,6 +142,52 @@ const lists: Record<
       photo: o.photo ?? null,
     }),
   },
+  posts: {
+    table: "blog_posts",
+    from: (r: Row) => ({
+      uid: r.uid,
+      slug: r.slug,
+      title: r.title,
+      summary: r.summary,
+      body: r.body,
+      author: r.author,
+      date: r.date,
+      cover: nul(r.cover),
+    }),
+    to: (o: Row) => ({
+      uid: o.uid,
+      slug: o.slug,
+      title: o.title,
+      summary: o.summary,
+      body: o.body,
+      author: o.author,
+      date: o.date,
+      cover: o.cover ?? null,
+    }),
+  },
+  grants: {
+    table: "grants",
+    from: (r: Row) => ({
+      uid: r.uid,
+      name: r.name,
+      agency: r.agency,
+      amount: r.amount,
+      deadline: r.deadline,
+      eligibility: r.eligibility,
+      summary: r.summary,
+      url: nul(r.url),
+    }),
+    to: (o: Row) => ({
+      uid: o.uid,
+      name: o.name,
+      agency: o.agency,
+      amount: o.amount,
+      deadline: o.deadline,
+      eligibility: o.eligibility,
+      summary: o.summary,
+      url: o.url ?? null,
+    }),
+  },
 };
 
 type ListSection = keyof typeof lists;
@@ -152,16 +201,19 @@ async function readList(section: ListSection) {
 
 /** Always-fresh read, for the admin panel and for saving. */
 export async function readContent(): Promise<Content> {
-  const [settings, stats, events, startups, listings, divisions, faculty, team] = await Promise.all([
-    db().from("site_settings").select("data").eq("id", 1).maybeSingle(),
-    readList("stats"),
-    readList("events"),
-    readList("startups"),
-    readList("listings"),
-    readList("divisions"),
-    readList("faculty"),
-    readList("team"),
-  ]);
+  const [settings, stats, events, startups, listings, divisions, faculty, team, posts, grants] =
+    await Promise.all([
+      db().from("site_settings").select("data").eq("id", 1).maybeSingle(),
+      readList("stats"),
+      readList("events"),
+      readList("startups"),
+      readList("listings"),
+      readList("divisions"),
+      readList("faculty"),
+      readList("team"),
+      readList("posts"),
+      readList("grants"),
+    ]);
   return {
     site: { ...defaultSite, ...((settings.data?.data as object) ?? {}) },
     stats,
@@ -171,6 +223,8 @@ export async function readContent(): Promise<Content> {
     divisions,
     faculty,
     team,
+    posts,
+    grants,
   } as unknown as Content;
 }
 
@@ -294,4 +348,41 @@ export async function listInbox<K extends InboxKind>(kind: K): Promise<ItemOf[K]
     .limit(500);
   if (error) throw new Error(error.message);
   return (data as Row[]).map((r) => fromRow(kind, r)) as unknown as ItemOf[K][];
+}
+
+// ---------- startup feedback ----------
+const feedbackFrom = (r: Row): Feedback => ({
+  id: r.id as string,
+  startupSlug: r.startup_slug as string,
+  name: (r.name as string) ?? "",
+  body: r.body as string,
+  hidden: !!r.hidden,
+  createdAt: new Date(r.created_at as string).toISOString(),
+});
+
+/** Visible comments for one startup, newest first (what the public page shows). */
+export async function listPublicFeedback(slug: string): Promise<Feedback[]> {
+  const { data, error } = await db()
+    .from("startup_feedback")
+    .select("*")
+    .eq("startup_slug", slug)
+    .eq("hidden", false)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw new Error(error.message);
+  return (data as Row[]).map(feedbackFrom);
+}
+
+/** Every comment, hidden or not, with the startup's name (admin moderation). */
+export async function listAllFeedback(): Promise<(Feedback & { startupName: string })[]> {
+  const { data, error } = await db()
+    .from("startup_feedback")
+    .select("*,startups(name)")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(error.message);
+  return (data as Row[]).map((r) => ({
+    ...feedbackFrom(r),
+    startupName: (r.startups as { name: string } | null)?.name ?? (r.startup_slug as string),
+  }));
 }

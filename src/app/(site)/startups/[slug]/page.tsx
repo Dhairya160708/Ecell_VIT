@@ -1,10 +1,13 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { Button } from "@/components/ui/Button";
-import { getContent } from "@/server/content";
+import { VideoEmbed } from "@/components/startups/VideoEmbed";
+import { FeedbackSection } from "@/components/startups/FeedbackSection";
+import { getContent, listPublicFeedback } from "@/server/content";
 
 type Params = Promise<{ slug: string }>;
 
@@ -21,6 +24,16 @@ export default function StartupPage({ params }: { params: Params }) {
       <StartupDetail params={params} />
     </Suspense>
   );
+}
+
+// Feedback is live data (new comments appear immediately), so it is read per request, outside the cached content.
+async function Feedback({ slug }: { slug: string }) {
+  await connection();
+  const initial = await listPublicFeedback(slug).catch((e) => {
+    console.error("could not load feedback", e);
+    return [];
+  });
+  return <FeedbackSection slug={slug} initial={initial} />;
 }
 
 async function StartupDetail({ params }: { params: Params }) {
@@ -65,6 +78,7 @@ async function StartupDetail({ params }: { params: Params }) {
           </Reveal>
         ))}
       </div>
+      <VideoEmbed url={s.video} name={s.name} />
       <Reveal className="mt-14">
         <h2 className="font-display text-4xl">Help wanted</h2>
         {open.length === 0 ? (
@@ -95,6 +109,9 @@ async function StartupDetail({ params }: { params: Params }) {
           </ul>
         )}
       </Reveal>
+      <Suspense fallback={<div className="mt-14 h-64 animate-pulse bg-surface" />}>
+        <Feedback slug={s.slug} />
+      </Suspense>
     </article>
   );
 }

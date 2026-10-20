@@ -16,6 +16,8 @@ export type Startup = {
   photo?: string;
   /** The startup's live site. When set, the startup card links out to it. */
   website?: string;
+  /** Short pitch video: a YouTube, Vimeo or Google Drive link (anything else is shown as a plain link). */
+  video?: string;
 };
 
 export type EventItem = {
@@ -53,6 +55,31 @@ export type Person = {
   github?: string;
   photo?: string;
 };
+export type BlogPost = {
+  uid: string;
+  slug: string;
+  title: string;
+  summary: string;
+  /** Plain text; blank lines separate paragraphs. */
+  body: string;
+  author: string;
+  /** yyyy-mm-dd */
+  date: string;
+  cover?: string;
+};
+
+export type Grant = {
+  uid: string;
+  name: string;
+  /** Ministry / agency running the scheme. */
+  agency: string;
+  amount: string;
+  deadline: string;
+  eligibility: string;
+  summary: string;
+  url?: string;
+};
+
 export type Division = { uid: string; name: string; line: string };
 export type Stat = { uid: string; value: string; label: string };
 
@@ -78,9 +105,21 @@ export type Content = {
   divisions: Division[];
   faculty: Person[];
   team: Person[];
+  posts: BlogPost[];
+  grants: Grant[];
 };
 
 export type Section = keyof Content;
+
+/** Public comment on a startup. Shown straight away; faculty can hide or delete it from /admin/feedback. */
+export type Feedback = {
+  id: string;
+  startupSlug: string;
+  name: string;
+  body: string;
+  hidden: boolean;
+  createdAt: string;
+};
 
 // ---------- Inbox: things visitors send through the website's forms ----------
 export type Message = {

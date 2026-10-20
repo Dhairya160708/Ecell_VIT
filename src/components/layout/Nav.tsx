@@ -11,6 +11,9 @@ const links = [
   ["Events", "/events"],
   ["Startups", "/startups"],
   ["Marketplace", "/marketplace"],
+  ["Grants", "/grants"],
+  ["Blog", "/blog"],
+  ["Team", "/team"],
   ["About", "/about"],
   ["Contact", "/contact"],
 ];
@@ -38,14 +41,14 @@ export function Nav() {
         <Link href="/" aria-label="E-Cell VIT home" onClick={() => setOpen(false)}>
           <Logo />
         </Link>
-        <ul className="hidden items-center gap-7 lg:flex xl:gap-9">
+        <ul className="hidden items-center gap-5 lg:flex xl:gap-8">
           {links.map(([label, href]) => {
             const active = path.startsWith(href);
             return (
               <li key={href}>
                 <Link
                   href={href}
-                  className={`group relative font-grotesk text-sm font-medium uppercase tracking-[0.14em] transition-colors ${active ? "text-gold" : "text-muted hover:text-ivory"}`}
+                  className={`group relative font-grotesk text-sm font-medium uppercase tracking-[0.12em] transition-colors ${active ? "text-gold" : "text-muted hover:text-ivory"}`}
                 >
                   {label}
                   <span
@@ -56,7 +59,7 @@ export function Nav() {
             );
           })}
         </ul>
-        <div className="hidden lg:block">
+        <div className="hidden xl:block">
           <Button href="/contact" className="!px-5 !py-2.5">
             Join the regiment
           </Button>

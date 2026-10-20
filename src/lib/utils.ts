@@ -4,6 +4,11 @@ export function dayMonth(iso: string) {
   return { day: String(d || 1).padStart(2, "0"), month: MONTHS[(m || 1) - 1] ?? "" };
 }
 
+export function longDate(iso: string) {
+  const { day, month } = dayMonth(iso);
+  return `${day} ${month[0]}${month.slice(1).toLowerCase()} ${iso.slice(0, 4)}`;
+}
+
 export function slugify(s: string) {
   return (
     s
