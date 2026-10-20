@@ -2,14 +2,18 @@
   "name": "vit-launchpad",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "format:check": "node scripts/check-format.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/site.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -23,6 +27,7 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -31,6 +36,7 @@
     "eslint-config-next": "16.4.0",
     "prettier": "^3.9.10",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

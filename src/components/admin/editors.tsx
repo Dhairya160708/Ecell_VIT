@@ -70,11 +70,20 @@ const eventFields: Field[] = [
 const statusTone = { Upcoming: "gold", Ongoing: "green", Past: "gray" } as const;
 const statusLabel = { Upcoming: "Coming up", Ongoing: "Happening now", Past: "Already happened" };
 
-export function EventsEditor({ items, autoNew }: { items: EventItem[]; autoNew?: boolean }) {
+export function EventsEditor({
+  items,
+  revision,
+  autoNew,
+}: {
+  items: EventItem[];
+  revision: number;
+  autoNew?: boolean;
+}) {
   return (
     <CollectionEditor<EventItem>
       section="events"
       items={items}
+      revision={revision}
       fields={eventFields}
       noun="event"
       autoNew={autoNew}
@@ -171,11 +180,20 @@ const startupFields: Field[] = [
   { key: "regId", label: "E-Cell registration ID", max: 30, placeholder: "e.g. VIT-EC-2026-001" },
 ];
 
-export function StartupsEditor({ items, autoNew }: { items: Startup[]; autoNew?: boolean }) {
+export function StartupsEditor({
+  items,
+  revision,
+  autoNew,
+}: {
+  items: Startup[];
+  revision: number;
+  autoNew?: boolean;
+}) {
   return (
     <CollectionEditor<Startup>
       section="startups"
       items={items}
+      revision={revision}
       fields={startupFields}
       noun="startup"
       autoNew={autoNew}
@@ -207,9 +225,11 @@ export function StartupsEditor({ items, autoNew }: { items: Startup[]; autoNew?:
 // ---------- jobs ----------
 export function JobsEditor({
   items,
+  revision,
   startups,
 }: {
   items: Listing[];
+  revision: number;
   startups: { slug: string; name: string }[];
 }) {
   const fields: Field[] = [
@@ -253,6 +273,7 @@ export function JobsEditor({
     <CollectionEditor<Listing>
       section="listings"
       items={items}
+      revision={revision}
       fields={fields}
       noun="job"
       emptyIcon={<BriefcaseBusiness className="h-6 w-6" />}
@@ -275,11 +296,12 @@ export function JobsEditor({
 }
 
 // ---------- people ----------
-export function FacultyEditor({ items }: { items: Person[] }) {
+export function FacultyEditor({ items, revision }: { items: Person[]; revision: number }) {
   return (
     <CollectionEditor<Person>
       section="faculty"
       items={items}
+      revision={revision}
       noun="faculty member"
       heading={<h2 className="font-grotesk text-2xl font-bold">Faculty advisors</h2>}
       fields={[
@@ -313,11 +335,12 @@ export function FacultyEditor({ items }: { items: Person[] }) {
   );
 }
 
-export function TeamEditor({ items }: { items: Person[] }) {
+export function TeamEditor({ items, revision }: { items: Person[]; revision: number }) {
   return (
     <CollectionEditor<Person>
       section="team"
       items={items}
+      revision={revision}
       noun="team member"
       heading={<h2 className="font-grotesk text-2xl font-bold">Student team</h2>}
       fields={[
@@ -342,11 +365,12 @@ export function TeamEditor({ items }: { items: Person[] }) {
 }
 
 // ---------- divisions ----------
-export function DivisionsEditor({ items }: { items: Division[] }) {
+export function DivisionsEditor({ items, revision }: { items: Division[]; revision: number }) {
   return (
     <CollectionEditor<Division>
       section="divisions"
       items={items}
+      revision={revision}
       noun="division"
       fields={[
         {
@@ -375,11 +399,20 @@ export function DivisionsEditor({ items }: { items: Division[] }) {
 }
 
 // ---------- blog ----------
-export function BlogEditor({ items, autoNew }: { items: BlogPost[]; autoNew?: boolean }) {
+export function BlogEditor({
+  items,
+  revision,
+  autoNew,
+}: {
+  items: BlogPost[];
+  revision: number;
+  autoNew?: boolean;
+}) {
   return (
     <CollectionEditor<BlogPost>
       section="posts"
       items={items}
+      revision={revision}
       noun="post"
       autoNew={autoNew}
       fields={[
@@ -435,11 +468,20 @@ export function BlogEditor({ items, autoNew }: { items: BlogPost[]; autoNew?: bo
 }
 
 // ---------- government grants ----------
-export function GrantsEditor({ items, autoNew }: { items: Grant[]; autoNew?: boolean }) {
+export function GrantsEditor({
+  items,
+  revision,
+  autoNew,
+}: {
+  items: Grant[];
+  revision: number;
+  autoNew?: boolean;
+}) {
   return (
     <CollectionEditor<Grant>
       section="grants"
       items={items}
+      revision={revision}
       noun="grant"
       autoNew={autoNew}
       fields={[

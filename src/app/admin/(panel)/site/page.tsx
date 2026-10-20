@@ -1,14 +1,21 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { readContent } from "@/server/content";
+import { readContentSnapshot } from "@/server/content";
 import { SiteEditor } from "@/components/admin/SiteEditor";
 import { PageTitle } from "@/components/admin/ui";
 import { Loading } from "@/components/admin/Loading";
 
 async function Data() {
   await connection();
-  const { site, stats } = await readContent();
-  return <SiteEditor site={site} stats={stats} />;
+  const { content, revisions } = await readContentSnapshot(["site", "stats"]);
+  return (
+    <SiteEditor
+      site={content.site}
+      stats={content.stats}
+      siteRevision={revisions.site ?? 0}
+      statsRevision={revisions.stats ?? 0}
+    />
+  );
 }
 
 export default function Page() {

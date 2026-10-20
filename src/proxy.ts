@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 // Send anyone who isn't signed in to the login page, and keep the Supabase session cookie fresh.
 // (The admin layout, every admin server action and the upload route also check that the account is faculty.)
 export async function proxy(req: NextRequest) {
+  if (process.env.SITE_PREVIEW === "true") return NextResponse.redirect(new URL("/", req.url));
   let res = NextResponse.next({ request: req });
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

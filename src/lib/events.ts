@@ -28,12 +28,3 @@ export function sortEvents(events: EventItem[], today: string | null) {
     return sa === "Past" ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date);
   });
 }
-
-/**
- * Where an event card leads. There are no event detail pages yet, so everything goes to the homepage.
- * When detail pages exist, change this one function (e.g. `/events/${e.slug}`) and every card follows.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function eventHref(e: EventItem) {
-  return "/";
-}

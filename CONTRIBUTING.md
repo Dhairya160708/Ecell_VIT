@@ -9,6 +9,8 @@ Thanks for helping with the E-Cell site! The basics:
    ```bash
    npm run format      # Prettier
    npm run lint        # ESLint
+   npm run typecheck   # TypeScript check
+   npm test            # Focused unit tests
    npm run build       # also type-checks
    ```
 5. **Open a pull request** into `main` with a short description and, for visual changes, a screenshot (phone width too).

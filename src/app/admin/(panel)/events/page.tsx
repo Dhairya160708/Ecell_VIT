@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { readContent } from "@/server/content";
+import { readContentSnapshot } from "@/server/content";
 import { EventsEditor } from "@/components/admin/editors";
 import { PageTitle } from "@/components/admin/ui";
 import { Loading } from "@/components/admin/Loading";
@@ -9,8 +9,8 @@ type SP = Promise<{ new?: string }>;
 
 async function Data({ searchParams }: { searchParams: SP }) {
   await connection();
-  const [{ events }, sp] = await Promise.all([readContent(), searchParams]);
-  return <EventsEditor items={events} autoNew={sp.new === "1"} />;
+  const [{ content, revisions }, sp] = await Promise.all([readContentSnapshot(["events"]), searchParams]);
+  return <EventsEditor items={content.events} revision={revisions.events ?? 0} autoNew={sp.new === "1"} />;
 }
 
 export default function Page({ searchParams }: { searchParams: SP }) {

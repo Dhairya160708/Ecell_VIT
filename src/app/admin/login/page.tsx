@@ -4,6 +4,8 @@ import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2, Lock } from "lucide-react";
 import { login } from "@/server/actions/admin";
 import { Crest } from "@/components/layout/Logo";
+import { isPreviewMode } from "@/server/preview";
+import Link from "next/link";
 
 function LoginForm() {
   const params = useSearchParams();
@@ -66,6 +68,21 @@ function LoginForm() {
 }
 
 export default function Login() {
+  if (isPreviewMode()) {
+    return (
+      <main className="grid min-h-svh place-items-center bg-[#0b1711] px-4 py-12 font-sans">
+        <div className="w-full max-w-sm text-center">
+          <h1 className="font-grotesk text-3xl font-bold text-white">Preview mode</h1>
+          <p className="mt-3 text-[15px] leading-6 text-white/70">
+            The admin panel is disabled in the read-only local preview.
+          </p>
+          <Link href="/" className="mt-6 inline-block font-semibold text-[#ead9a6] underline">
+            Return to the website
+          </Link>
+        </div>
+      </main>
+    );
+  }
   return (
     <main className="grid min-h-svh place-items-center bg-[#0b1711] px-4 py-12 font-sans">
       <div className="w-full max-w-sm">

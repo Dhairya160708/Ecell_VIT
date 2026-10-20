@@ -5,13 +5,15 @@ import { requireFaculty } from "@/server/auth";
 import { db } from "@/server/supabase/admin";
 import { sessionClient } from "@/server/supabase/server";
 import { deleteInboxItem, getInboxItem, saveInboxItem, writeSection } from "@/server/content";
-import { makeUid, slugify } from "@/lib/utils";
+import { makeUid, slugify, uniqueSlug } from "@/lib/utils";
 import { type Content, type InboxKind, type Section } from "@/types/content";
+import { isPreviewMode } from "@/server/preview";
 
-export type Result = { ok: true; message?: string } | { ok: false; error: string };
+export type Result = { ok: true; message?: string; revision?: number } | { ok: false; error: string };
 
 // ---------- login ----------
 export async function login(_: string | null, form: FormData): Promise<string | null> {
+  if (isPreviewMode()) return "Admin access is disabled in local preview mode.";
   const email = String(form.get("email") ?? "")
     .trim()
     .toLowerCase();
@@ -95,8 +97,7 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
   startups: (v) => {
     const seen = new Set<string>();
     return arr(v).map((o) => {
-      let slug = slugify(str(o.slug) || str(o.name));
-      while (seen.has(slug)) slug = `${slug}-2`;
+      const slug = uniqueSlug(str(o.slug) || str(o.name), seen);
       seen.add(slug);
       return {
         uid: str(o.uid, 40) || makeUid("sp"),
@@ -145,8 +146,7 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
   posts: (v) => {
     const seen = new Set<string>();
     return arr(v).map((o) => {
-      let slug = slugify(str(o.slug) || str(o.title));
-      while (seen.has(slug)) slug = `${slug}-2`;
+      const slug = uniqueSlug(str(o.slug) || str(o.title), seen);
       seen.add(slug);
       return {
         uid: str(o.uid, 40) || makeUid("bp"),
@@ -183,13 +183,19 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
     })),
 };
 
-export async function saveSection<K extends Section>(section: K, value: Content[K]): Promise<Result> {
+export async function saveSection<K extends Section>(
+  section: K,
+  value: Content[K],
+  expectedRevision: number,
+): Promise<Result> {
   try {
     await requireFaculty();
     if (!(section in clean)) return { ok: false, error: "Unknown section." };
-    await writeSection(section, clean[section](value));
+    if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0)
+      return { ok: false, error: "This editor is out of date. Reload the page and try again." };
+    const revision = await writeSection(section, clean[section](value), expectedRevision);
     updateTag("content");
-    return { ok: true };
+    return { ok: true, revision };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Something went wrong while saving." };
   }
@@ -247,38 +253,15 @@ export async function approveIdea(id: string): Promise<Result> {
     const idea = await getInboxItem("ideas", id);
     if (!idea) return { ok: false, error: "That idea no longer exists." };
     if (idea.status === "Approved" && idea.startupSlug) return { ok: true, message: idea.startupSlug };
-    const client = db();
-    const { data: rows, error: slugErr } = await client.from("startups").select("slug,position");
-    if (slugErr) throw new Error(slugErr.message);
-    const taken = new Set((rows ?? []).map((r) => r.slug as string));
-    let slug = slugify(idea.name);
-    while (taken.has(slug)) slug = `${slug}-2`;
-    const position = Math.max(-1, ...(rows ?? []).map((r) => Number(r.position) || 0)) + 1;
-    const { error } = await client.from("startups").insert({
-      uid: makeUid("sp"),
-      slug,
-      reg_id: "",
-      name: idea.name,
-      pitch: idea.pitch,
-      category: idea.category,
-      status: "Idea",
-      stage: "Approved idea",
-      founder: idea.team.split(/[\n,]/)[0]?.trim() || "Student founder",
-      problem: idea.problem,
-      solution: idea.solution,
-      source_idea_uid: idea.id,
-      position,
+    const { data: slug, error } = await db().rpc("approve_idea", {
+      p_id: id,
+      p_reviewer: who.name || who.email,
+      p_uid: makeUid("sp"),
+      p_base_slug: slugify(idea.name),
     });
     if (error) throw new Error(error.message);
-    await saveInboxItem({
-      ...idea,
-      status: "Approved",
-      startupSlug: slug,
-      reviewedBy: who.name || who.email,
-      reviewedAt: new Date().toISOString(),
-    });
     updateTag("content");
-    return { ok: true, message: slug };
+    return { ok: true, message: String(slug) };
   } catch (e) {
     return fail(e, "Could not approve that idea.");
   }

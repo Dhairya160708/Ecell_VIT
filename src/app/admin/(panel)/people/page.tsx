@@ -1,17 +1,17 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { readContent } from "@/server/content";
+import { readContentSnapshot } from "@/server/content";
 import { FacultyEditor, TeamEditor } from "@/components/admin/editors";
 import { PageTitle } from "@/components/admin/ui";
 import { Loading } from "@/components/admin/Loading";
 
 async function Data() {
   await connection();
-  const { faculty, team } = await readContent();
+  const { content, revisions } = await readContentSnapshot(["faculty", "team"]);
   return (
     <div className="space-y-14">
-      <FacultyEditor items={faculty} />
-      <TeamEditor items={team} />
+      <FacultyEditor items={content.faculty} revision={revisions.faculty ?? 0} />
+      <TeamEditor items={content.team} revision={revisions.team ?? 0} />
     </div>
   );
 }

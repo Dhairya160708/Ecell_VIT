@@ -20,7 +20,8 @@ The website of the Entrepreneurship Cell of Vidyalankar Institute of Technology 
 
 ## Run it locally
 
-You need Node.js 20+ and a Supabase project (free tier is fine).
+You need Node.js 20.9 or newer. A Supabase project (free tier is fine) is needed
+for live content, form submissions, admin access, and persistent photo uploads.
 
 ```bash
 git clone <repo-url>
@@ -30,34 +31,45 @@ cp .env.example .env.local      # then fill in the values (see below)
 npm run dev                     # http://localhost:3000
 ```
 
+### Preview without Supabase
+
+To explore a read-only version of the public site without credentials, copy
+`.env.example` to `.env.local`, set `SITE_PREVIEW=true`, and run `npm run dev`.
+The site uses clearly labeled sample content; forms, uploads, and admin editing
+are disabled. Set `SITE_PREVIEW=false` and configure Supabase to use the live
+data-backed features.
+
 ### Environment variables
 
 `.env.example` lists every variable. Fill them in `.env.local` (git-ignored; never commit it).
 
-| Variable                        | What it is                                                                   |
-| ------------------------------- | ---------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Your Supabase project URL                                                    |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key; safe in the browser                                              |
-| `SUPABASE_SERVICE_ROLE_KEY`     | **Secret** server-only key. Never expose it or prefix it with `NEXT_PUBLIC_` |
-| `BLOB_READ_WRITE_TOKEN`         | Optional. Leave unset locally (photos go to `.data/`)                        |
+| Variable                        | What it is                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Your Supabase project URL                                                                  |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key; safe in the browser                                                            |
+| `SUPABASE_SERVICE_ROLE_KEY`     | **Secret** server-only key. Never expose it or prefix it with `NEXT_PUBLIC_`               |
+| `BLOB_READ_WRITE_TOKEN`         | Required in production for durable photo uploads; optional locally (photos go to `.data/`) |
+| `SITE_PREVIEW`                  | Optional. Set `true` for a read-only sample site without Supabase                          |
 
 ### Set up the database (first time only)
 
 1. Run the SQL in `supabase/migrations/` against your project (Supabase dashboard -> SQL editor, or `npx supabase db query --linked -f <file>` after `npx supabase link`).
 2. Seed the basic site text and divisions: `node --env-file=.env.local scripts/seed.mjs`
 3. Create a faculty login: `node --env-file=.env.local scripts/create-faculty.mjs <email> <password> "<Full name>"`
-4. Open `/admin/login` and sign in. Everything else (events, startups, team, jobs) is added from the admin panel.
+4. For production photo uploads, configure `BLOB_READ_WRITE_TOKEN` from the connected private Vercel Blob store.
+5. Open `/admin/login` and sign in. Everything else (events, startups, team, jobs) is added from the admin panel.
 
 ## Scripts
 
-| Command                | What it does                            |
-| ---------------------- | --------------------------------------- |
-| `npm run dev`          | Dev server                              |
-| `npm run build`        | Production build                        |
-| `npm run lint`         | ESLint                                  |
-| `npm run typecheck`    | TypeScript check                        |
-| `npm run format`       | Format everything with Prettier         |
-| `npm run format:check` | Check formatting without changing files |
+| Command                | What it does                                            |
+| ---------------------- | ------------------------------------------------------- |
+| `npm run dev`          | Dev server                                              |
+| `npm run build`        | Production build                                        |
+| `npm run lint`         | ESLint                                                  |
+| `npm run typecheck`    | TypeScript check                                        |
+| `npm test`             | Focused unit tests                                      |
+| `npm run format`       | Format everything with Prettier                         |
+| `npm run format:check` | Check formatting of changed files without changing them |
 
 ## Project structure
 

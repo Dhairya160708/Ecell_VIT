@@ -33,6 +33,7 @@ type Summary = {
 type Props<T extends Item> = {
   section: Section;
   items: T[];
+  revision: number;
   fields: Field[];
   noun: string; // "event"
   emptyIcon: React.ReactNode;
@@ -48,6 +49,7 @@ type Props<T extends Item> = {
 export function CollectionEditor<T extends Item>({
   section,
   items: initial,
+  revision: initialRevision,
   fields,
   noun,
   emptyIcon,
@@ -59,6 +61,7 @@ export function CollectionEditor<T extends Item>({
   autoNew,
 }: Props<T>) {
   const [items, setItems] = useState(initial);
+  const [revision, setRevision] = useState(initialRevision);
   const [draft, setDraft] = useState<{ index: number | null; value: T } | null>(
     autoNew ? { index: null, value: { ...blank(), uid: makeUid() } as T } : null,
   );
@@ -72,12 +75,21 @@ export function CollectionEditor<T extends Item>({
   async function persist(next: T[], message: string, undo?: T[]): Promise<boolean> {
     const before = items;
     setItems(next);
-    const r = await saveSection(section, next as unknown as Content[typeof section]);
+    const r = await saveSection(section, next as unknown as Content[typeof section], revision);
     if (!r.ok) {
       setItems(before);
       toast({ tone: "error", text: r.error });
       return false;
     }
+    if (r.revision === undefined) {
+      setItems(before);
+      toast({
+        tone: "error",
+        text: "The save response was incomplete. Reload the page before editing again.",
+      });
+      return false;
+    }
+    setRevision(r.revision);
     toast({
       tone: "success",
       text: message,

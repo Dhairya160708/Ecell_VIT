@@ -161,7 +161,6 @@ body {
   transform-style: preserve-3d;
   transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.flip:hover .flip-inner,
 .flip.is-flipped .flip-inner {
   transform: rotateY(180deg);
 }
