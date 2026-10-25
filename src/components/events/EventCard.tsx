@@ -1,9 +1,8 @@
 "use client";
-import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { dayMonth } from "@/lib/utils";
 import { type EventItem } from "@/types/content";
-import { eventHref, eventStatus } from "@/lib/events";
+import { eventStatus } from "@/lib/events";
 import { useToday } from "@/hooks/use-today";
 
 const badge = {
@@ -63,17 +62,8 @@ export function EventCard({ e, i, light = false }: { e: EventItem; i: number; li
           {e.report}
         </p>
       )}
-      {/* The whole card is one link (stretched). The report link, when there is one, sits above it. */}
-      <div className="mt-6 flex items-center justify-between gap-4">
-        <Link
-          href={eventHref(e)}
-          className={`flex items-center gap-2 font-grotesk text-sm font-bold uppercase tracking-[0.1em] after:absolute after:inset-0 ${light ? "text-gold-deep" : "text-gold"}`}
-        >
-          Explore event
-          <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-          <span className="sr-only">: {e.title}</span>
-        </Link>
-        {e.reportUrl && (
+      {e.reportUrl && (
+        <div className="mt-6 flex items-center justify-end gap-4">
           <a
             href={e.reportUrl}
             {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
@@ -82,8 +72,8 @@ export function EventCard({ e, i, light = false }: { e: EventItem; i: number; li
             Read report
             <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
-        )}
-      </div>
+        </div>
+      )}
     </article>
   );
 }

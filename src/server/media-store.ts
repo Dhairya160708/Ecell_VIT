@@ -11,7 +11,19 @@ import { get, put } from "@vercel/blob";
 const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 const LOCAL = path.join(process.cwd(), ".data");
 
+export function photoStorageConfigurationError() {
+  return process.env.NODE_ENV === "production" && !useBlob
+    ? "Photo uploads require BLOB_READ_WRITE_TOKEN in production."
+    : undefined;
+}
+
+function requirePhotoStorage() {
+  const error = photoStorageConfigurationError();
+  if (error) throw new Error(error);
+}
+
 export async function writeBinary(pathname: string, data: ArrayBuffer, contentType: string) {
+  requirePhotoStorage();
   if (useBlob) {
     await put(pathname, Buffer.from(data), {
       access: "private",
@@ -29,6 +41,7 @@ export async function writeBinary(pathname: string, data: ArrayBuffer, contentTy
 export async function readBinary(
   pathname: string,
 ): Promise<{ body: ReadableStream | Buffer; contentType: string } | null> {
+  requirePhotoStorage();
   if (useBlob) {
     const r = await get(pathname, { access: "private" }).catch(() => null);
     if (!r || r.statusCode !== 200 || !r.stream) return null;

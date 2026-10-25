@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Startup } from "@/types/content";
@@ -9,14 +9,31 @@ const host = (url: string) => url.replace(/^https?:\/\/(www\.)?/i, "").replace(/
 /** Flips on hover (desktop) or tap (touch). Both faces link out to the startup's live site when it has one. */
 export function StartupCard({ s, i }: { s: Startup; i: number }) {
   const [flipped, setFlipped] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const backToggle = useRef<HTMLButtonElement>(null);
+  const frontToggle = useRef<HTMLButtonElement>(null);
+  const showBack = flipped || hovered;
   const site = s.website && /^https?:\/\//i.test(s.website) ? s.website : undefined;
   return (
-    <div className={`flip h-[24rem] w-full sm:h-[26rem] ${flipped ? "is-flipped" : ""}`}>
+    <div
+      className={`flip h-[24rem] w-full sm:h-[26rem] ${showBack ? "is-flipped" : ""}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <div className="flip-inner">
-        <div className="flip-face relative flex flex-col border border-ink/10 bg-white p-5 text-left">
+        <div
+          aria-hidden={showBack}
+          inert={showBack}
+          className="flip-face relative flex flex-col border border-ink/10 bg-white p-5 text-left"
+        >
           <button
+            ref={frontToggle}
             type="button"
-            onClick={() => setFlipped(true)}
+            onClick={() => {
+              setHovered(false);
+              setFlipped(true);
+              requestAnimationFrame(() => backToggle.current?.focus());
+            }}
             aria-label={`Show the idea behind ${s.name}`}
             className="flex min-h-0 flex-1 flex-col text-left"
           >
@@ -73,9 +90,23 @@ export function StartupCard({ s, i }: { s: Startup; i: number }) {
           )}
         </div>
         <div
+          aria-hidden={!showBack}
+          inert={!showBack}
           className="flip-back flip-face flex flex-col overflow-hidden border border-gold/40 bg-gradient-to-br from-forest to-elev p-7 text-ivory"
-          onClick={() => setFlipped(false)}
         >
+          <button
+            ref={backToggle}
+            type="button"
+            aria-label={`Show ${s.name} startup details`}
+            onClick={() => {
+              setFlipped(false);
+              setHovered(false);
+              requestAnimationFrame(() => frontToggle.current?.focus());
+            }}
+            className="absolute right-5 top-5 z-10 font-grotesk text-xs font-bold uppercase tracking-[0.12em] text-gold hover:text-gold-light"
+          >
+            Back
+          </button>
           <span className="font-grotesk text-xs font-bold uppercase tracking-[0.2em] text-gold">
             The idea / 0{i + 1}
           </span>

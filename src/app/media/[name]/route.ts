@@ -1,7 +1,10 @@
 import { readBinary } from "@/server/media-store";
+import { photoStorageConfigurationError } from "@/server/media-store";
 
 // Serves uploaded photos from the private store. Names are unique per upload, so cache forever.
 export async function GET(_: Request, { params }: { params: Promise<{ name: string }> }) {
+  const storageError = photoStorageConfigurationError();
+  if (storageError) return new Response(storageError, { status: 503 });
   const { name } = await params;
   if (!/^[\w-]+\.(jpg|png|webp)$/.test(name)) return new Response("Not found", { status: 404 });
   const file = await readBinary(`media/${name}`);

@@ -16,6 +16,8 @@ export type Startup = {
   photo?: string;
   /** The startup's live site. When set, the startup card links out to it. */
   website?: string;
+  /** Short pitch video: a YouTube, Vimeo or Google Drive link (anything else is shown as a plain link). */
+  video?: string;
 };
 
 export type EventItem = {
@@ -108,6 +110,16 @@ export type Content = {
 };
 
 export type Section = keyof Content;
+
+/** Public comment on a startup. Shown straight away; faculty can hide or delete it from /admin/feedback. */
+export type Feedback = {
+  id: string;
+  startupSlug: string;
+  name: string;
+  body: string;
+  hidden: boolean;
+  createdAt: string;
+};
 
 // ---------- Inbox: things visitors send through the website's forms ----------
 export type Message = {

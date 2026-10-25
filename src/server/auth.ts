@@ -1,11 +1,13 @@
 import "server-only";
 import { db } from "./supabase/admin";
 import { sessionClient } from "./supabase/server";
+import { isPreviewMode } from "@/server/preview";
 
 export type Faculty = { id: string; email: string; name: string };
 
 /** The logged-in faculty member, or null. Being signed in is not enough: the account must be in faculty_users. */
 export async function currentFaculty(): Promise<Faculty | null> {
+  if (isPreviewMode()) return null;
   const { data } = await (await sessionClient()).auth.getUser();
   if (!data.user) return null;
   const { data: row } = await db()

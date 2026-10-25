@@ -22,6 +22,14 @@ export function slugify(s: string) {
   );
 }
 
+export function uniqueSlug(value: string, taken: ReadonlySet<string>) {
+  const base = slugify(value);
+  let slug = base;
+  let suffix = 2;
+  while (taken.has(slug)) slug = `${base}-${suffix++}`;
+  return slug;
+}
+
 export function makeUid(prefix = "x") {
   return `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 }

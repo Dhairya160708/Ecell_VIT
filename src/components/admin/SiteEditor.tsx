@@ -66,9 +66,21 @@ const groups: {
   },
 ];
 
-export function SiteEditor({ site: initialSite, stats: initialStats }: { site: SiteText; stats: Stat[] }) {
+export function SiteEditor({
+  site: initialSite,
+  stats: initialStats,
+  siteRevision: initialSiteRevision,
+  statsRevision: initialStatsRevision,
+}: {
+  site: SiteText;
+  stats: Stat[];
+  siteRevision: number;
+  statsRevision: number;
+}) {
   const [site, setSite] = useState(initialSite);
   const [stats, setStats] = useState(initialStats);
+  const [siteRevision, setSiteRevision] = useState(initialSiteRevision);
+  const [statsRevision, setStatsRevision] = useState(initialStatsRevision);
   const [saved, setSaved] = useState({ site: initialSite, stats: initialStats });
   const [busy, setBusy] = useState(false);
   const toast = useToast();
@@ -92,10 +104,14 @@ export function SiteEditor({ site: initialSite, stats: initialStats }: { site: S
     }
     setBusy(true);
     const results = await Promise.all([
-      dirtySite ? saveSection("site", site) : { ok: true as const },
-      dirtyStats ? saveSection("stats", stats) : { ok: true as const },
+      dirtySite ? saveSection("site", site, siteRevision) : { ok: true as const },
+      dirtyStats ? saveSection("stats", stats, statsRevision) : { ok: true as const },
     ]);
     setBusy(false);
+    if (results[0].ok && "revision" in results[0] && results[0].revision !== undefined)
+      setSiteRevision(results[0].revision);
+    if (results[1].ok && "revision" in results[1] && results[1].revision !== undefined)
+      setStatsRevision(results[1].revision);
     const failed = results.find((r) => !r.ok);
     if (failed && !failed.ok) {
       toast({ tone: "error", text: failed.error });

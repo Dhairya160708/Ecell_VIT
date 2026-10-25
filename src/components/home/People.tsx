@@ -53,7 +53,7 @@ export function People({ faculty, team }: { faculty: Person[]; team: Person[] })
           <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <Eyebrow>Behind the build</Eyebrow>
-              <h2 className="font-display text-[clamp(3rem,5.5vw,5.5rem)] text-ivory">E-Cell tech team</h2>
+              <h2 className="font-display text-[clamp(3rem,5.5vw,5.5rem)] text-ivory">E-Cell team</h2>
             </div>
             <p className="max-w-sm text-sm leading-6 text-muted">
               Students designing the systems, stories, and digital experiences that keep the community

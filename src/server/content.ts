@@ -4,6 +4,7 @@ import { defaultSite } from "@/lib/constants";
 import {
   type Application,
   type Content,
+  type Feedback,
   type Idea,
   type InboxItem,
   type InboxKind,
@@ -11,6 +12,8 @@ import {
   type Section,
 } from "@/types/content";
 import { db } from "./supabase/admin";
+import { getPreviewContent } from "./content-preview";
+import { isPreviewMode } from "./preview";
 
 // ---------- row <-> Content mapping ----------
 // Each list section is a table. `position` keeps the order the admin chose.
@@ -71,6 +74,7 @@ const lists: Record<
       solution: r.solution,
       photo: nul(r.photo),
       website: nul(r.website),
+      video: nul(r.video_url),
     }),
     to: (o: Row) => ({
       uid: o.uid,
@@ -86,6 +90,7 @@ const lists: Record<
       solution: o.solution,
       photo: o.photo ?? null,
       website: o.website ?? null,
+      video_url: o.video ?? null,
     }),
   },
   listings: {
@@ -198,6 +203,7 @@ async function readList(section: ListSection) {
 
 /** Always-fresh read, for the admin panel and for saving. */
 export async function readContent(): Promise<Content> {
+  if (isPreviewMode()) return getPreviewContent();
   const [settings, stats, events, startups, listings, divisions, faculty, team, posts, grants] =
     await Promise.all([
       db().from("site_settings").select("data").eq("id", 1).maybeSingle(),
@@ -233,28 +239,67 @@ export async function getContent(): Promise<Content> {
   return readContent();
 }
 
-/** Replace one whole section: upsert what is given (in order) and delete what was removed. */
-export async function writeSection<K extends Section>(section: K, value: Content[K]) {
+/** Read content between matching section revisions so editors never get a stale snapshot with a fresh token. */
+export async function readContentSnapshot(sections: Section[]) {
+  if (isPreviewMode()) {
+    return {
+      content: getPreviewContent(),
+      revisions: Object.fromEntries(sections.map((section) => [section, 0])) as Partial<
+        Record<Section, number>
+      >,
+    };
+  }
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const before = await readSectionRevisions(sections);
+    const content = await readContent();
+    const after = await readSectionRevisions(sections);
+    if (sections.every((section) => before[section] === after[section])) return { content, revisions: after };
+  }
+
+  throw new Error("Content changed while the editor was loading. Reload the page and try again.");
+}
+
+async function readSectionRevisions(sections: Section[]): Promise<Partial<Record<Section, number>>> {
+  const { data, error } = await db()
+    .from("content_section_revisions")
+    .select("section,revision")
+    .in("section", sections);
+  if (error) throw new Error(`Could not read content revisions: ${error.message}`);
+  const revisions = Object.fromEntries(sections.map((section) => [section, 0])) as Partial<
+    Record<Section, number>
+  >;
+  for (const row of data ?? []) {
+    if (sections.includes(row.section as Section)) revisions[row.section as Section] = Number(row.revision);
+  }
+  return revisions;
+}
+
+/** Atomically save a section only if its revision still matches the editor's snapshot. */
+export async function writeSection<K extends Section>(
+  section: K,
+  value: Content[K],
+  expectedRevision: number,
+): Promise<number> {
+  if (isPreviewMode()) throw new Error("Saving is disabled in local preview mode.");
   const client = db();
-  if (section === "site") {
-    const { error } = await client.from("site_settings").upsert({ id: 1, data: value });
-    if (error) throw new Error(error.message);
-    return;
-  }
-  const l = lists[section as ListSection];
-  const items = value as unknown as Row[];
-  if (items.length) {
-    const { error } = await client
-      .from(l.table)
-      .upsert(items.map((o, position) => ({ ...l.to(o), position })));
-    if (error) throw new Error(error.message);
-  }
-  const keep = items.map((o) => o.uid as string);
-  const del = client.from(l.table).delete();
-  const { error } = keep.length
-    ? await del.not("uid", "in", `(${keep.map((k) => `"${k}"`).join(",")})`)
-    : await del.neq("uid", "");
-  if (error) throw new Error(error.message);
+  const payload =
+    section === "site"
+      ? value
+      : (value as unknown as Row[]).map((item, position) => ({
+          ...lists[section as ListSection].to(item),
+          position,
+        }));
+  const { data, error } = await client.rpc("save_content_section", {
+    p_section: section,
+    p_expected_revision: expectedRevision,
+    p_payload: payload,
+  });
+  if (error) throw new Error(`Could not save ${section}: ${error.message}`);
+  const revision = Number(data);
+  if (revision < 0)
+    throw new Error("This section changed since you opened it. Reload the page and try your edit again.");
+  return revision;
 }
 
 // ---------- inbox ----------
@@ -345,4 +390,41 @@ export async function listInbox<K extends InboxKind>(kind: K): Promise<ItemOf[K]
     .limit(500);
   if (error) throw new Error(error.message);
   return (data as Row[]).map((r) => fromRow(kind, r)) as unknown as ItemOf[K][];
+}
+
+// ---------- startup feedback ----------
+const feedbackFrom = (r: Row): Feedback => ({
+  id: r.id as string,
+  startupSlug: r.startup_slug as string,
+  name: (r.name as string) ?? "",
+  body: r.body as string,
+  hidden: !!r.hidden,
+  createdAt: new Date(r.created_at as string).toISOString(),
+});
+
+/** Visible comments for one startup, newest first (what the public page shows). */
+export async function listPublicFeedback(slug: string): Promise<Feedback[]> {
+  const { data, error } = await db()
+    .from("startup_feedback")
+    .select("*")
+    .eq("startup_slug", slug)
+    .eq("hidden", false)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw new Error(error.message);
+  return (data as Row[]).map(feedbackFrom);
+}
+
+/** Every comment, hidden or not, with the startup's name (admin moderation). */
+export async function listAllFeedback(): Promise<(Feedback & { startupName: string })[]> {
+  const { data, error } = await db()
+    .from("startup_feedback")
+    .select("*,startups(name)")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(error.message);
+  return (data as Row[]).map((r) => ({
+    ...feedbackFrom(r),
+    startupName: (r.startups as { name: string } | null)?.name ?? (r.startup_slug as string),
+  }));
 }
