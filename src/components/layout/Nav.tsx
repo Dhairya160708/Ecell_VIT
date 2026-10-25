@@ -8,6 +8,7 @@ import { Logo } from "./Logo";
 import { Button } from "../ui/Button";
 
 const links = [
+  ["Home", "/"],
   ["Events", "/events"],
   ["Startups", "/startups"],
   ["Marketplace", "/marketplace"],
@@ -43,7 +44,7 @@ export function Nav() {
         </Link>
         <ul className="hidden items-center gap-5 lg:flex xl:gap-8">
           {links.map(([label, href]) => {
-            const active = path.startsWith(href);
+            const active = href === "/" ? path === "/" : path.startsWith(href);
             return (
               <li key={href}>
                 <Link

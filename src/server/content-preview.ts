@@ -49,6 +49,7 @@ const demoContent: Content = {
   team: [],
   posts: [],
   grants: [],
+  gallery: [],
 };
 
 export function getPreviewContent(): Content {

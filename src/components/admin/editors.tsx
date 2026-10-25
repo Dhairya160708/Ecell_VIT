@@ -3,6 +3,7 @@ import {
   ArrowDownUp,
   BriefcaseBusiness,
   CalendarDays,
+  Images,
   Landmark,
   GraduationCap,
   Newspaper,
@@ -16,6 +17,7 @@ import {
   type BlogPost,
   type Division,
   type EventItem,
+  type GalleryPhoto,
   type Grant,
   type Listing,
   type Person,
@@ -137,10 +139,10 @@ const startupFields: Field[] = [
   },
   {
     key: "video",
-    label: "Pitch video link",
+    label: "Founder introduction video",
     max: 300,
     placeholder: "https://youtu.be/…",
-    hint: "A 1–2 minute pitch. YouTube, Vimeo or Google Drive links play on the startup's page. Leave blank for no video.",
+    hint: "A 1–2 minute founder introduction. YouTube, Vimeo or Google Drive links play on the startup's page. Other http(s) links are shown as a safe button. Leave blank to hide the section.",
   },
   {
     key: "pitch",
@@ -267,6 +269,24 @@ export function JobsEditor({
         ["Unpaid", "Unpaid / volunteer"],
       ]),
     },
+    {
+      key: "applicationMethod",
+      label: "How should students apply?",
+      type: "select",
+      required: true,
+      options: opts([
+        ["internal", "On this website (form in the Marketplace)"],
+        ["external", "On the startup's own site (external link)"],
+      ]),
+      hint: "External listing applications are handled entirely by the destination you configure below.",
+    },
+    {
+      key: "applicationUrl",
+      label: "External application URL",
+      max: 300,
+      placeholder: "https://…",
+      hint: "Required only for external applications. Must start with https:// (or http://). Leave empty for the on-site form.",
+    },
   ];
   const names = Object.fromEntries(startups.map((s) => [s.slug, s.name]));
   return (
@@ -278,12 +298,22 @@ export function JobsEditor({
       noun="job"
       emptyIcon={<BriefcaseBusiness className="h-6 w-6" />}
       emptyText="Post roles that student startups need help with. Applications arrive in your Inbox."
+      validate={(l): Record<string, string> =>
+        l.applicationMethod === "external" && !l.applicationUrl?.trim()
+          ? {
+              applicationUrl:
+                "Add the startup's full https:// application link, or switch to the on-site form.",
+            }
+          : {}
+      }
       blank={() => ({
         startupSlug: startups[0]?.slug ?? "",
         role: "",
         skills: [],
         commitment: "",
         compensation: "Unpaid",
+        applicationMethod: "internal",
+        applicationUrl: "",
       })}
       summary={(l) => ({
         title: l.role,
@@ -463,6 +493,59 @@ export function BlogEditor({
           href: p.slug ? `/blog/${p.slug}` : "/blog",
         };
       }}
+    />
+  );
+}
+
+// ---------- gallery ----------
+export function GalleryEditor({
+  items,
+  revision,
+  autoNew,
+}: {
+  items: GalleryPhoto[];
+  revision: number;
+  autoNew?: boolean;
+}) {
+  return (
+    <CollectionEditor<GalleryPhoto>
+      section="gallery"
+      items={items}
+      revision={revision}
+      noun="photo"
+      autoNew={autoNew}
+      fields={[
+        {
+          key: "src",
+          label: "Photo",
+          type: "image",
+          required: true,
+          dimensions: { widthKey: "width", heightKey: "height" },
+          hint: "Wide and tall photos both work — the gallery keeps their natural shape.",
+        },
+        {
+          key: "alt",
+          label: "Description for screen readers",
+          required: true,
+          max: 180,
+          placeholder: "e.g. Students pitching at E-Summit 2026",
+          hint: "Describe what is happening in the photo. Do not start with “image of”.",
+        },
+        {
+          key: "caption",
+          label: "Visible caption (optional)",
+          max: 160,
+          placeholder: "e.g. Demo day, Mumbai",
+        },
+      ]}
+      emptyIcon={<Images className="h-6 w-6" />}
+      emptyText="Add photos from events, workshops and other approved E-Cell activities. They appear in the home page masonry gallery."
+      blank={() => ({ src: "", alt: "", caption: "", width: undefined, height: undefined })}
+      summary={(p) => ({
+        title: p.caption || p.alt,
+        subtitle: p.width && p.height ? `${p.width} × ${p.height}` : "Gallery photo",
+        image: p.src,
+      })}
     />
   );
 }

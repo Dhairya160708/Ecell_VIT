@@ -7,11 +7,12 @@ import {
   CalendarPlus,
   Lightbulb,
   MessageSquare,
+  Newspaper,
   PenLine,
   Rocket,
   Sparkles,
 } from "lucide-react";
-import { listInbox, readContent } from "@/server/content";
+import { listBlogSubmissions, listInbox, readContent } from "@/server/content";
 import { Card, PageTitle } from "@/components/admin/ui";
 import { eventStatus } from "@/lib/events";
 import { Loading } from "@/components/admin/Loading";
@@ -52,11 +53,12 @@ function Tile({
 
 async function Dashboard() {
   await connection();
-  const [c, messages, ideas, apps] = await Promise.all([
+  const [c, messages, ideas, apps, submissions] = await Promise.all([
     readContent(),
     listInbox("messages"),
     listInbox("ideas"),
     listInbox("applications"),
+    listBlogSubmissions(),
   ]);
   const fresh = (xs: { status: string }[]) => xs.filter((x) => x.status === "New").length;
   const upcoming = c.events.filter((e) => eventStatus(e) !== "Past").length;
@@ -65,7 +67,7 @@ async function Dashboard() {
     <div className="space-y-10">
       <section>
         <h2 className="mb-4 font-grotesk text-lg font-bold">Waiting for you</h2>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Tile
             href="/admin/inbox?tab=messages"
             icon={<MessageSquare className="h-6 w-6" />}
@@ -85,6 +87,13 @@ async function Dashboard() {
             icon={<BriefcaseBusiness className="h-6 w-6" />}
             n={fresh(apps)}
             label="new job applications"
+            urgent
+          />
+          <Tile
+            href="/admin/blog"
+            icon={<Newspaper className="h-6 w-6" />}
+            n={submissions.filter((s) => s.status === "pending").length}
+            label="student blogs to review"
             urgent
           />
         </div>

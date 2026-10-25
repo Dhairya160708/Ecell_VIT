@@ -15,6 +15,13 @@ export const defaultSite: SiteText = {
   address: "Vidyalankar Institute of Technology, Vidyalankar College Marg, Wadala (E), Mumbai 400037",
   instagram: "",
   linkedin: "",
+  teamPhoto: "",
+  linktree: "",
+  introReel: "",
+  posters: "",
+  publicity: "",
+  ideaForm: "",
+  interviewForm: "",
 };
 
 /**

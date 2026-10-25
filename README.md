@@ -2,8 +2,8 @@
 
 The website of the Entrepreneurship Cell of Vidyalankar Institute of Technology ("The Scouts of VIT"). It has:
 
-- a **public site**: events, a startup showcase, a "help wanted" marketplace, an About page and contact/idea-submission forms;
-- a **faculty admin panel** at `/admin`: log in, review submitted startup ideas (score, comment, approve or reject), and edit all site content without touching code. Approving an idea publishes it as a startup on the public site.
+- a **public site**: events, startup showcases by domain, an animated home-page gallery, a "help wanted" marketplace (with on-site or external applications), a team page, a blog with student submissions, an About page and contact/idea-submission forms;
+- a **faculty admin panel** at `/admin`: review submitted startup ideas and student blogs, moderate feedback, and edit all site content (including gallery photos, team photo and footer resource links) without touching code. Approving an idea or blog publishes it on the public site.
 
 ## Tech stack
 
@@ -84,8 +84,8 @@ src/
   components/
     ui/                   Small shared pieces: Button, Reveal, Counter, Eyebrow, ScrollProgress
     layout/               Site chrome: Nav, Footer, Logo, Intro animation, PageHeader
-    home/                 Home-page sections (Hero, Divisions, Ventures, People, ...)
-    events/ startups/ marketplace/ contact/    One folder per feature (cards + the page's interactive view)
+    home/                 Home-page sections (Hero, Divisions, startup/team marquees, gallery, ...)
+    events/ startups/ marketplace/ blog/ team/ contact/    One folder per feature (cards + the page's interactive view)
     admin/                Admin UI: shell, editors, inbox/review queue
   server/                 Server-only code: never imported into browser code
     content.ts            Reads/writes site content in Supabase (the single data-access module)

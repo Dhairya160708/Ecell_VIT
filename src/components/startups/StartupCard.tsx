@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Startup } from "@/types/content";
 
 const host = (url: string) => url.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/.*$/, "");
+const domainHref = (category: string) => `/startups/domain/${encodeURIComponent(category)}`;
 
 /** Flips on hover (desktop) or tap (touch). Both faces link out to the startup's live site when it has one. */
 export function StartupCard({ s, i }: { s: Startup; i: number }) {
@@ -54,9 +55,6 @@ export function StartupCard({ s, i }: { s: Startup; i: number }) {
                   </span>
                 </span>
               )}
-              <span className="absolute left-4 top-4 bg-ink px-2.5 py-1 font-grotesk text-[10px] font-bold uppercase tracking-widest text-ivory">
-                {s.category}
-              </span>
               <span className="absolute bottom-3 right-4 font-display text-6xl leading-none text-ink/10">
                 0{i + 1}
               </span>
@@ -69,6 +67,15 @@ export function StartupCard({ s, i }: { s: Startup; i: number }) {
               <span className="mt-1 block text-sm text-ink/65">Founded by {s.founder}</span>
             </span>
           </button>
+          {s.category && (
+            <Link
+              href={domainHref(s.category)}
+              aria-label={`Browse ${s.category} startups`}
+              className="absolute left-4 top-4 z-10 bg-ink px-2.5 py-1 font-grotesk text-[10px] font-bold uppercase tracking-widest text-ivory transition hover:bg-gold hover:text-ink"
+            >
+              {s.category}
+            </Link>
+          )}
           {site ? (
             <a
               href={site}
@@ -112,6 +119,14 @@ export function StartupCard({ s, i }: { s: Startup; i: number }) {
           </span>
           <span className="mt-6 font-display text-6xl">{s.name}</span>
           <span className="mt-4 text-lg leading-8 text-ivory/80">{s.pitch}</span>
+          {s.category && (
+            <Link
+              href={domainHref(s.category)}
+              className="mt-4 inline-flex items-center gap-1.5 font-grotesk text-[11px] font-bold uppercase tracking-[0.14em] text-gold hover:text-gold-light"
+            >
+              More in {s.category} <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
           <span className="mt-auto flex items-center justify-between gap-3 border-t border-ivory/15 pt-5">
             <span>
               <span className="block font-grotesk text-[10px] uppercase tracking-widest text-ivory/60">

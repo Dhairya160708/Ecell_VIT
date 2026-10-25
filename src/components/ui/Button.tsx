@@ -14,6 +14,8 @@ type Props = {
   /** Accessible name when the visible text alone is ambiguous (e.g. several "Apply" buttons). */
   label?: string;
   disabled?: boolean;
+  /** Opens in a new tab. Use only for destinations outside this website. */
+  external?: boolean;
 };
 
 const styles = {
@@ -33,6 +35,7 @@ export function Button({
   id,
   label,
   disabled = false,
+  external = false,
 }: Props) {
   const x = useSpring(useMotionValue(0), { stiffness: 260, damping: 18 });
   const y = useSpring(useMotionValue(0), { stiffness: 260, damping: 18 });
@@ -63,7 +66,14 @@ export function Button({
       className="inline-block"
     >
       {href ? (
-        <Link href={href} id={id} aria-label={label} className={cls}>
+        <Link
+          href={href}
+          id={id}
+          aria-label={label}
+          className={cls}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noopener noreferrer" : undefined}
+        >
           {inner}
         </Link>
       ) : (

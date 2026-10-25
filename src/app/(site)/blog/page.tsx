@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { getContent } from "@/server/content";
 import { longDate } from "@/lib/utils";
@@ -16,6 +17,12 @@ export default async function Blog() {
         Notes from our faculty and team on building, learning and launching at Vidyalankar.
       </PageHeader>
       <section className="mx-auto max-w-6xl px-5 pt-14 pb-28">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <p className="text-sm text-subtle">Have something worth sharing?</p>
+          <Button href="/blog/submit" variant="ghost">
+            Submit a blog
+          </Button>
+        </div>
         {sorted.length === 0 ? (
           <p className="border border-line bg-surface p-10 text-center text-muted">
             No posts yet. Check back soon.

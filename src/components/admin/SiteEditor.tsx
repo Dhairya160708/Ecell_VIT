@@ -3,12 +3,21 @@ import { useEffect, useState } from "react";
 import { saveSection } from "@/server/actions/admin";
 import type { SiteText, Stat } from "@/types/content";
 import { Btn, Card, FieldShell, inputCls, useToast } from "./ui";
+import { ImageField } from "./ImageField";
 
 type Key = keyof SiteText;
 const groups: {
   title: string;
   where: string;
-  fields: { key: Key; label: string; hint?: string; max: number; rows?: number; type?: string }[];
+  fields: {
+    key: Key;
+    label: string;
+    hint?: string;
+    max: number;
+    rows?: number;
+    type?: string;
+    optional?: boolean;
+  }[];
 }[] = [
   {
     title: "Top of the home page",
@@ -54,13 +63,78 @@ const groups: {
         key: "instagram",
         label: "Instagram link",
         max: 200,
+        optional: true,
         hint: "Paste the full link, e.g. https://instagram.com/ecellvit. Leave empty to hide the icon.",
       },
       {
         key: "linkedin",
         label: "LinkedIn link",
         max: 200,
+        optional: true,
         hint: "Paste the full link. Leave empty to hide the icon.",
+      },
+    ],
+  },
+  {
+    title: "Teams page",
+    where: "The large group photo used in the scroll transition on the Teams page.",
+    fields: [
+      {
+        key: "teamPhoto",
+        label: "Team group photo",
+        type: "image",
+        max: 300,
+        optional: true,
+        hint: "Use a real group photograph. Leave empty until one is available; the page then shows the member cards without the scroll effect.",
+      },
+    ],
+  },
+  {
+    title: "Footer resources",
+    where:
+      "Links shown in the Resources and Participate groups. Empty fields are shown as unavailable, never invented.",
+    fields: [
+      {
+        key: "linktree",
+        label: "Linktree",
+        max: 300,
+        optional: true,
+        hint: "Full https:// link. Leave empty to show “Coming soon”.",
+      },
+      {
+        key: "introReel",
+        label: "Introduction reel",
+        max: 300,
+        optional: true,
+        hint: "Instagram/YouTube reel or video link. Leave empty to show “Coming soon”.",
+      },
+      {
+        key: "posters",
+        label: "Instagram posters / gallery link",
+        max: 300,
+        optional: true,
+        hint: "Leave empty to link to the on-site photo gallery instead.",
+      },
+      {
+        key: "publicity",
+        label: "Publicity team link",
+        max: 300,
+        optional: true,
+        hint: "A verified page or profile for the publicity team. Leave empty to hide it.",
+      },
+      {
+        key: "ideaForm",
+        label: "Startup idea form",
+        max: 300,
+        optional: true,
+        hint: "A Google Form or similar. Leave empty to use the website's own Pitch an idea form.",
+      },
+      {
+        key: "interviewForm",
+        label: "Interview form",
+        max: 300,
+        optional: true,
+        hint: "A Google Form or similar. Leave empty to show “Coming soon”.",
       },
     ],
   },
@@ -134,11 +208,17 @@ export function SiteEditor({
                 id={f.key}
                 label={f.label}
                 hint={f.hint}
-                required={f.key !== "instagram" && f.key !== "linkedin"}
+                required={!f.optional}
                 max={f.max}
                 count={site[f.key].length}
               >
-                {f.rows ? (
+                {f.type === "image" ? (
+                  <ImageField
+                    id={f.key}
+                    value={site[f.key] || undefined}
+                    onChange={(url) => setSite({ ...site, [f.key]: url ?? "" })}
+                  />
+                ) : f.rows ? (
                   <textarea
                     id={f.key}
                     rows={f.rows}

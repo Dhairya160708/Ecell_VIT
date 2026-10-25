@@ -42,6 +42,10 @@ export type Listing = {
   skills: string[];
   commitment: string;
   compensation: "Paid" | "Equity" | "Unpaid";
+  /** How applicants should apply: through the on-site form, or an external URL supplied by the startup. */
+  applicationMethod: "internal" | "external";
+  /** Only used when applicationMethod is "external". Must be an http(s) URL. */
+  applicationUrl?: string;
 };
 
 export type Person = {
@@ -66,6 +70,16 @@ export type BlogPost = {
   /** yyyy-mm-dd */
   date: string;
   cover?: string;
+};
+
+export type GalleryPhoto = {
+  uid: string;
+  /** Uploaded photo URL (served through /media). */
+  src: string;
+  alt: string;
+  caption?: string;
+  width?: number;
+  height?: number;
 };
 
 export type Grant = {
@@ -94,6 +108,15 @@ export type SiteText = {
   address: string;
   instagram: string;
   linkedin: string;
+  /** Large group photo used at the top of the teams page. */
+  teamPhoto: string;
+  /** Footer resources. Empty strings are shown as unavailable, never as invented links. */
+  linktree: string;
+  introReel: string;
+  posters: string;
+  publicity: string;
+  ideaForm: string;
+  interviewForm: string;
 };
 
 export type Content = {
@@ -107,6 +130,7 @@ export type Content = {
   team: Person[];
   posts: BlogPost[];
   grants: Grant[];
+  gallery: GalleryPhoto[];
 };
 
 export type Section = keyof Content;
@@ -165,3 +189,19 @@ export type Application = {
 };
 export type InboxItem = Message | Idea | Application;
 export type InboxKind = InboxItem["kind"];
+
+/** A student blog draft. It is private until faculty approve it; approval creates a published BlogPost. */
+export type BlogSubmission = {
+  id: string;
+  createdAt: string;
+  title: string;
+  summary: string;
+  body: string;
+  author: string;
+  authorEmail: string;
+  status: "pending" | "approved" | "rejected";
+  rejectionReason?: string;
+  postSlug?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+};

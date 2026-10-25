@@ -2,6 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Reveal } from "@/components/ui/Reveal";
+import { TeamScrollPhoto } from "@/components/team/TeamScrollPhoto";
 import { getContent } from "@/server/content";
 import type { Person } from "@/types/content";
 
@@ -22,13 +23,14 @@ const profileCls =
   "inline-flex items-center gap-1 font-grotesk text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-gold";
 
 export default async function Team() {
-  const { faculty, team } = await getContent();
+  const { faculty, team, site } = await getContent();
   const domains = [...new Set(team.map((m) => m.domain || "Core team"))];
   return (
     <>
       <PageHeader eyebrow="The people" title="Our" accent="team.">
         The faculty who guide E-Cell and the students who run it.
       </PageHeader>
+      {site.teamPhoto && <TeamScrollPhoto src={site.teamPhoto} />}
       <section className="mx-auto max-w-7xl px-5 pt-14 pb-28 lg:px-8">
         {faculty.length > 0 && (
           <div>

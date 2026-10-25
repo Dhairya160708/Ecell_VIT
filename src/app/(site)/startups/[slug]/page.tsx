@@ -53,7 +53,12 @@ async function StartupDetail({ params }: { params: Params }) {
       </Link>
       <Reveal>
         <div className="flex gap-2 text-xs">
-          <span className="rounded-full border border-line px-3 py-1 text-muted">{s.category}</span>
+          <Link
+            href={`/startups/domain/${encodeURIComponent(s.category)}`}
+            className="rounded-full border border-line px-3 py-1 text-muted transition hover:border-gold hover:text-fg"
+          >
+            {s.category}
+          </Link>
           <span className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-muted">
             <span className="h-1.5 w-1.5 rounded-full bg-gold" />
             {s.status}

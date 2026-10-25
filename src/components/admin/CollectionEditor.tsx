@@ -20,6 +20,8 @@ export type Field = {
   options?: { value: string; label: string }[];
   rows?: number;
   shape?: "wide" | "portrait";
+  /** For gallery images: keep the uploaded photo's dimensions so the public masonry avoids layout shift. */
+  dimensions?: { widthKey: string; heightKey: string };
 };
 
 type Summary = {
@@ -43,6 +45,8 @@ type Props<T extends Item> = {
   heading?: React.ReactNode;
   tools?: (items: T[], save: (next: T[], msg: string) => void) => React.ReactNode;
   autoNew?: boolean;
+  /** Cross-field checks, merged with the per-field validation above. */
+  validate?: (value: T) => Record<string, string>;
 };
 
 /** A list of things (events, startups…) with add / edit / reorder / delete. Every change saves straight to the website. */
@@ -59,6 +63,7 @@ export function CollectionEditor<T extends Item>({
   heading,
   tools,
   autoNew,
+  validate,
 }: Props<T>) {
   const [items, setItems] = useState(initial);
   const [revision, setRevision] = useState(initialRevision);
@@ -146,6 +151,7 @@ export function CollectionEditor<T extends Item>({
       else if (f.type === "email" && typeof v === "string" && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))
         errs[f.key] = "That email address doesn't look right.";
     }
+    Object.assign(errs, validate?.(draft.value) ?? {});
     setErrors(errs);
     if (Object.values(errs).some(Boolean)) return;
     setBusy(true);
@@ -315,6 +321,14 @@ export function CollectionEditor<T extends Item>({
                 error={errors[f.key]}
                 onChange={(v) => set(f.key, v)}
                 onBusy={(b) => setUploading((n) => Math.max(0, n + (b ? 1 : -1)))}
+                onImageDimensions={
+                  f.dimensions
+                    ? (width, height) => {
+                        set(f.dimensions!.widthKey, width);
+                        set(f.dimensions!.heightKey, height);
+                      }
+                    : undefined
+                }
               />
             ))}
             <button type="submit" hidden />
@@ -331,12 +345,14 @@ function FieldInput({
   error,
   onChange,
   onBusy,
+  onImageDimensions,
 }: {
   f: Field;
   value: unknown;
   error?: string;
   onChange: (v: unknown) => void;
   onBusy: (b: boolean) => void;
+  onImageDimensions?: (width: number, height: number) => void;
 }) {
   const id = `f-${f.key}`;
   const str = typeof value === "string" ? value : "";
@@ -374,7 +390,14 @@ function FieldInput({
       break;
     case "image":
       control = (
-        <ImageField id={id} value={str || undefined} shape={f.shape} onChange={onChange} onBusy={onBusy} />
+        <ImageField
+          id={id}
+          value={str || undefined}
+          shape={f.shape}
+          onChange={onChange}
+          onBusy={onBusy}
+          onDimensions={onImageDimensions}
+        />
       );
       break;
     case "tags":

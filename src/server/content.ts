@@ -3,6 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { defaultSite } from "@/lib/constants";
 import {
   type Application,
+  type BlogSubmission,
   type Content,
   type Feedback,
   type Idea,
@@ -22,7 +23,16 @@ const nul = <T>(v: T | null | undefined) => (v == null || v === "" ? undefined :
 
 type ListDef = { table: string; from: (r: Row) => Row; to: (o: Row) => Row };
 const lists: Record<
-  "stats" | "divisions" | "events" | "startups" | "listings" | "faculty" | "team" | "posts" | "grants",
+  | "stats"
+  | "divisions"
+  | "events"
+  | "startups"
+  | "listings"
+  | "faculty"
+  | "team"
+  | "posts"
+  | "grants"
+  | "gallery",
   ListDef
 > = {
   stats: {
@@ -102,6 +112,8 @@ const lists: Record<
       skills: r.skills ?? [],
       commitment: r.commitment,
       compensation: r.compensation,
+      applicationMethod: r.application_method === "external" ? "external" : "internal",
+      applicationUrl: nul(r.application_url),
     }),
     to: (o: Row) => ({
       uid: o.uid,
@@ -110,6 +122,8 @@ const lists: Record<
       skills: o.skills,
       commitment: o.commitment,
       compensation: o.compensation,
+      application_method: o.applicationMethod ?? "internal",
+      application_url: o.applicationUrl ?? null,
     }),
   },
   faculty: {
@@ -167,6 +181,25 @@ const lists: Record<
       cover: o.cover ?? null,
     }),
   },
+  gallery: {
+    table: "gallery_photos",
+    from: (r: Row) => ({
+      uid: r.uid,
+      src: r.src,
+      alt: r.alt,
+      caption: nul(r.caption),
+      width: nul(r.width),
+      height: nul(r.height),
+    }),
+    to: (o: Row) => ({
+      uid: o.uid,
+      src: o.src,
+      alt: o.alt,
+      caption: o.caption ?? null,
+      width: o.width ?? null,
+      height: o.height ?? null,
+    }),
+  },
   grants: {
     table: "grants",
     from: (r: Row) => ({
@@ -204,7 +237,7 @@ async function readList(section: ListSection) {
 /** Always-fresh read, for the admin panel and for saving. */
 export async function readContent(): Promise<Content> {
   if (isPreviewMode()) return getPreviewContent();
-  const [settings, stats, events, startups, listings, divisions, faculty, team, posts, grants] =
+  const [settings, stats, events, startups, listings, divisions, faculty, team, posts, grants, gallery] =
     await Promise.all([
       db().from("site_settings").select("data").eq("id", 1).maybeSingle(),
       readList("stats"),
@@ -216,6 +249,7 @@ export async function readContent(): Promise<Content> {
       readList("team"),
       readList("posts"),
       readList("grants"),
+      readList("gallery"),
     ]);
   return {
     site: { ...defaultSite, ...((settings.data?.data as object) ?? {}) },
@@ -228,6 +262,7 @@ export async function readContent(): Promise<Content> {
     team,
     posts,
     grants,
+    gallery,
   } as unknown as Content;
 }
 
@@ -427,4 +462,54 @@ export async function listAllFeedback(): Promise<(Feedback & { startupName: stri
     ...feedbackFrom(r),
     startupName: (r.startups as { name: string } | null)?.name ?? (r.startup_slug as string),
   }));
+}
+
+// ---------- student blog submissions ----------
+const blogSubmissionFrom = (r: Row): BlogSubmission => ({
+  id: r.id as string,
+  createdAt: new Date(r.created_at as string).toISOString(),
+  title: r.title as string,
+  summary: (r.summary as string) ?? "",
+  body: r.body as string,
+  author: r.author as string,
+  authorEmail: r.author_email as string,
+  status: r.status as BlogSubmission["status"],
+  rejectionReason: nul(r.rejection_reason as string),
+  postSlug: nul(r.post_slug as string),
+  reviewedBy: nul(r.reviewed_by as string),
+  reviewedAt: nul(r.reviewed_at as string),
+});
+
+/** Every submission, newest first. Server-only: blog_submissions has no public RLS policy. */
+export async function listBlogSubmissions(): Promise<BlogSubmission[]> {
+  const { data, error } = await db()
+    .from("blog_submissions")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(`Could not read blog submissions: ${error.message}`);
+  return (data as Row[]).map(blogSubmissionFrom);
+}
+
+export async function getBlogSubmission(id: string): Promise<BlogSubmission | null> {
+  const { data, error } = await db().from("blog_submissions").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? blogSubmissionFrom(data as Row) : null;
+}
+
+export async function rejectBlogSubmission(id: string, reason: string, reviewer: string) {
+  const { data, error } = await db()
+    .from("blog_submissions")
+    .update({
+      status: "rejected",
+      rejection_reason: reason || null,
+      reviewed_by: reviewer,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("That submission is no longer pending review.");
 }

@@ -159,3 +159,102 @@ test("database-backed rate limits stop after the configured request count", asyn
   }
   assert.deepEqual(results, [true, true, true, true, true, false]);
 });
+
+test("gallery photos save through the generic content function", async () => {
+  const database = await databasePromise;
+  const photos = [
+    {
+      uid: "photo-one",
+      src: "/media/gallery/demo.jpg",
+      alt: "Students at a demo day",
+      caption: "Demo day",
+      width: 1600,
+      height: 1067,
+      position: 0,
+    },
+  ];
+  const saved = await database.query<{ revision: number }>(
+    "select public.save_content_section($1, $2, $3::jsonb) as revision",
+    ["gallery", 0, JSON.stringify(photos)],
+  );
+  assert.equal(Number(saved.rows[0].revision), 1);
+  const rows = await database.query<{
+    uid: string;
+    src: string;
+    alt: string;
+    width: number;
+    height: number;
+  }>("select uid, src, alt, width, height from public.gallery_photos");
+  assert.deepEqual(rows.rows, [
+    {
+      uid: "photo-one",
+      src: "/media/gallery/demo.jpg",
+      alt: "Students at a demo day",
+      width: 1600,
+      height: 1067,
+    },
+  ]);
+});
+
+test("external listings require an http(s) application URL at the database layer", async () => {
+  const database = await databasePromise;
+  await database.exec(`
+    insert into public.startups (uid, slug, name) values ('listing-test-startup', 'listing-test', 'Listing Test');
+  `);
+  await assert.rejects(
+    database.query(
+      "insert into public.listings (uid, startup_slug, role, application_method) values ('bad-external', 'listing-test', 'Designer', 'external')",
+    ),
+  );
+  await assert.rejects(
+    database.query(
+      "insert into public.listings (uid, startup_slug, role, application_method, application_url) values ('bad-url', 'listing-test', 'Designer', 'external', 'javascript:alert(1)')",
+    ),
+  );
+  await database.query(
+    "insert into public.listings (uid, startup_slug, role, application_method, application_url) values ('good-external', 'listing-test', 'Designer', 'external', 'https://example.com/apply')",
+  );
+  const row = await database.query<{ method: string; url: string }>(
+    "select application_method as method, application_url as url from public.listings where uid = 'good-external'",
+  );
+  assert.deepEqual(row.rows[0], { method: "external", url: "https://example.com/apply" });
+});
+
+test("approved blog submissions publish once and keep the reviewer private", async () => {
+  const database = await databasePromise;
+  await database.exec(`
+    insert into public.blog_submissions (id, title, summary, body, author, author_email)
+    values ('blog-one', 'A student story', 'A short summary', 'A long enough body for the blog post.', 'Student One', 'student@example.edu');
+  `);
+  const publish = () =>
+    database.query<{ slug: string }>("select public.approve_blog_submission($1, $2, $3, $4, $5) as slug", [
+      "blog-one",
+      "post-one",
+      "a-student-story",
+      "2026-10-25",
+      "Faculty Reviewer",
+    ]);
+  const first = await publish();
+  const retry = await publish();
+  assert.equal(first.rows[0].slug, "a-student-story");
+  assert.equal(retry.rows[0].slug, "a-student-story");
+
+  const result = await database.query<{
+    status: string;
+    reviewer: string;
+    post_slug: string;
+    count: number;
+    revision: number;
+  }>(`
+    select s.status, s.reviewed_by as reviewer, s.post_slug,
+      (select count(*)::int from public.blog_posts where slug = s.post_slug) as count,
+      (select revision from public.content_section_revisions where section = 'posts') as revision
+    from public.blog_submissions s
+    where s.id = 'blog-one'
+  `);
+  assert.equal(result.rows[0].status, "approved");
+  assert.equal(result.rows[0].reviewer, "Faculty Reviewer");
+  assert.equal(result.rows[0].post_slug, "a-student-story");
+  assert.equal(result.rows[0].count, 1);
+  assert.equal(Number(result.rows[0].revision), 1);
+});

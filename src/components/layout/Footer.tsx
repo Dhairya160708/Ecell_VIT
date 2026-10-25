@@ -4,18 +4,22 @@ import { Logo } from "./Logo";
 import { WhatsAppCta } from "./WhatsAppCta";
 import type { SiteText } from "@/types/content";
 
-const explore = [
-  ["Events", "/events"],
-  ["Startups", "/startups"],
-  ["Marketplace", "/marketplace"],
-  ["Submit an idea", "/submit"],
+type FooterLink = { label: string; href?: string; external?: boolean };
+
+const explore: FooterLink[] = [
+  { label: "Home", href: "/" },
+  { label: "Events", href: "/events" },
+  { label: "Startups", href: "/startups" },
+  { label: "Marketplace", href: "/marketplace" },
+  { label: "Gallery", href: "/#gallery" },
 ];
-const community = [
-  ["Our team", "/team"],
-  ["Blog", "/blog"],
-  ["Government grants", "/grants"],
-  ["About", "/about"],
-  ["Contact", "/contact"],
+const community: FooterLink[] = [
+  { label: "Our team", href: "/team" },
+  { label: "Blog", href: "/blog" },
+  { label: "Government grants", href: "/grants" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+  { label: "Privacy", href: "/privacy" },
 ];
 
 // lucide no longer ships brand icons, so these two are inline.
@@ -42,30 +46,87 @@ function LinkedInIcon() {
   );
 }
 
+/** Only complete http(s) links are rendered; everything else is shown as unavailable, never guessed. */
+function webUrl(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  try {
+    const u = new URL(raw);
+    return u.protocol === "https:" || u.protocol === "http:" ? u.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 const linkCls = "text-sm text-muted transition hover:text-gold";
 const colHead = "font-grotesk text-xs font-bold uppercase tracking-[0.24em] text-gold";
 
-function LinkList({ title, links }: { title: string; links: string[][] }) {
+function LinkItem({ link }: { link: FooterLink }) {
+  if (!link.href) {
+    return (
+      <li>
+        <span
+          aria-disabled="true"
+          title="This link has not been added yet"
+          className="inline-flex items-center gap-2 text-sm text-subtle/70"
+        >
+          {link.label}
+          <span className="font-grotesk text-[9px] font-bold uppercase tracking-[0.14em] text-gold/60">
+            soon
+          </span>
+        </span>
+      </li>
+    );
+  }
   return (
-    <div>
+    <li>
+      {link.external ? (
+        <a
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${linkCls} inline-flex items-center gap-1.5`}
+        >
+          {link.label}
+          <ArrowUpRight className="h-3.5 w-3.5 text-gold/70" />
+        </a>
+      ) : (
+        <Link href={link.href} className={linkCls}>
+          {link.label}
+        </Link>
+      )}
+    </li>
+  );
+}
+
+function LinkList({ title, links }: { title: string; links: FooterLink[] }) {
+  return (
+    <nav aria-label={title}>
       <p className={colHead}>{title}</p>
       <ul className="mt-5 space-y-3">
-        {links.map(([label, href]) => (
-          <li key={href}>
-            <Link href={href} className={linkCls}>
-              {label}
-            </Link>
-          </li>
+        {links.map((link) => (
+          <LinkItem key={link.label} link={link} />
         ))}
       </ul>
-    </div>
+    </nav>
   );
 }
 
 export function Footer({ site }: { site: SiteText }) {
   const socials = [
-    { label: "Instagram", url: site.instagram, icon: <InstagramIcon /> },
-    { label: "LinkedIn", url: site.linkedin, icon: <LinkedInIcon /> },
+    { label: "Instagram", url: webUrl(site.instagram), icon: <InstagramIcon /> },
+    { label: "LinkedIn", url: webUrl(site.linkedin), icon: <LinkedInIcon /> },
+  ];
+  const resourceLinks: FooterLink[] = [
+    { label: "Linktree", href: webUrl(site.linktree), external: true },
+    { label: "Introduction reel", href: webUrl(site.introReel), external: true },
+    site.posters
+      ? { label: "Posters", href: webUrl(site.posters), external: true }
+      : { label: "Photo gallery", href: "/#gallery" },
+    { label: "Publicity team", href: webUrl(site.publicity), external: true },
+    site.ideaForm
+      ? { label: "Pitch an idea", href: webUrl(site.ideaForm), external: true }
+      : { label: "Pitch an idea", href: "/submit" },
+    { label: "Interview form", href: webUrl(site.interviewForm), external: true },
   ];
   return (
     <footer className="relative overflow-hidden border-t border-line bg-bg">
@@ -74,7 +135,7 @@ export function Footer({ site }: { site: SiteText }) {
         className="absolute -bottom-40 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-moss/20 blur-[120px]"
       />
       <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
-        <div className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.5fr_0.7fr_0.8fr_1.2fr] lg:py-20">
+        <div className="grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-[1.35fr_0.65fr_0.8fr_1fr_1.05fr] lg:gap-8 lg:py-20">
           <div>
             <Logo />
             <p className="mt-6 max-w-sm text-sm leading-7 text-muted">
@@ -111,6 +172,7 @@ export function Footer({ site }: { site: SiteText }) {
           </div>
           <LinkList title="Explore" links={explore} />
           <LinkList title="Community" links={community} />
+          <LinkList title="Resources" links={resourceLinks} />
           <div>
             <p className={colHead}>Find us</p>
             <div className="mt-5 space-y-5 text-sm leading-6 text-muted">
@@ -122,6 +184,19 @@ export function Footer({ site }: { site: SiteText }) {
                 <Mail className="h-4 w-4 shrink-0 text-gold" />
                 {site.email}
               </a>
+            </div>
+            <div className="mt-7 border-t border-line pt-5">
+              <p className="text-xs leading-5 text-subtle">
+                Have something to share?{" "}
+                <Link href="/blog/submit" className="text-gold transition hover:text-gold-light">
+                  Submit a blog
+                </Link>{" "}
+                or{" "}
+                <Link href="/contact" className="text-gold transition hover:text-gold-light">
+                  get in touch
+                </Link>
+                .
+              </p>
             </div>
           </div>
         </div>

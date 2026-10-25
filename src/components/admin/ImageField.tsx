@@ -5,7 +5,7 @@ import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 const MAX_SIDE = 1600;
 
 /** Shrink big phone photos in the browser so uploads are fast and small. */
-async function resize(file: File): Promise<Blob> {
+async function resize(file: File): Promise<{ blob: Blob; width: number; height: number }> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
@@ -13,12 +13,15 @@ async function resize(file: File): Promise<Blob> {
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/webp", 0.85));
-  return (
-    blob ??
-    new Promise<Blob>((r, j) =>
-      canvas.toBlob((b) => (b ? r(b) : j(new Error("Could not read that photo."))), "image/jpeg", 0.85),
-    )
-  );
+  return {
+    blob:
+      blob ??
+      (await new Promise<Blob>((r, j) =>
+        canvas.toBlob((b) => (b ? r(b) : j(new Error("Could not read that photo."))), "image/jpeg", 0.85),
+      )),
+    width: canvas.width,
+    height: canvas.height,
+  };
 }
 
 export function ImageField({
@@ -26,12 +29,14 @@ export function ImageField({
   value,
   onChange,
   onBusy,
+  onDimensions,
   shape = "wide",
 }: {
   id: string;
   value?: string;
   onChange: (url: string | undefined) => void;
   onBusy?: (busy: boolean) => void;
+  onDimensions?: (width: number, height: number) => void;
   shape?: "wide" | "portrait";
 }) {
   const input = useRef<HTMLInputElement>(null);
@@ -51,7 +56,8 @@ export function ImageField({
     try {
       const body = new FormData();
       const small = await resize(file);
-      body.append("file", new File([small], "photo", { type: small.type }));
+      onDimensions?.(small.width, small.height);
+      body.append("file", new File([small.blob], "photo", { type: small.blob.type }));
       const res = await fetch("/api/admin/upload", { method: "POST", body });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Upload failed.");

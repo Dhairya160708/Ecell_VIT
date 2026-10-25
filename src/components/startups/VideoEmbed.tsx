@@ -8,14 +8,14 @@ const corners = [
   "bottom-0 right-0 border-b-2 border-r-2",
 ];
 
-/** The startup's pitch video. Renders nothing when there is no usable link. */
+/** The founder's introduction video. Renders nothing when there is no usable link. */
 export function VideoEmbed({ url, name }: { url?: string; name: string }) {
   const v = parseVideo(url);
   if (!v) return null;
   return (
-    <section aria-labelledby="pitch-video" className="mt-14">
-      <h2 id="pitch-video" className="font-display text-4xl">
-        Watch the pitch
+    <section aria-labelledby="founder-video" className="mt-14">
+      <h2 id="founder-video" className="font-display text-4xl">
+        Meet the founder
       </h2>
       {v.kind === "embed" ? (
         <div className="relative mt-5 border border-line-strong bg-black p-1.5 shadow-[0_30px_80px_-30px_rgba(0,0,0,.9),0_0_40px_-10px_rgba(199,165,79,.25)] sm:p-2.5">
@@ -25,7 +25,7 @@ export function VideoEmbed({ url, name }: { url?: string; name: string }) {
           <div className="aspect-video w-full bg-elev">
             <iframe
               src={v.src}
-              title={`${name} pitch video (${v.provider})`}
+              title={`${name} founder introduction video (${v.provider})`}
               loading="lazy"
               allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
@@ -46,7 +46,7 @@ export function VideoEmbed({ url, name }: { url?: string; name: string }) {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block font-grotesk text-sm font-bold uppercase tracking-[0.14em] text-ivory">
-              Watch the pitch video
+              Watch the founder introduction
             </span>
             <span className="block truncate text-sm text-muted">{v.href}</span>
           </span>

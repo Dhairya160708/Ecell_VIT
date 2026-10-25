@@ -35,7 +35,7 @@ export function MarketplaceView({ listings, names }: { listings: Listing[]; name
   if (wanted && wanted !== handled) {
     setHandled(wanted); // runs once per link, during render
     const hit = listings.find((l) => l.uid === wanted);
-    if (hit) setActive(hit);
+    if (hit && hit.applicationMethod !== "external") setActive(hit);
   }
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -92,16 +92,33 @@ export function MarketplaceView({ listings, names }: { listings: Listing[]; name
                       </span>
                     ))}
                   </div>
-                  <div className="mt-6 flex items-center justify-between">
-                    <span className="text-sm text-subtle">{l.commitment}</span>
-                    <Button
-                      id={`apply-${l.uid}`}
-                      onClick={() => setActive(l)}
-                      label={`Apply for ${l.role} at ${names[l.startupSlug] ?? l.startupSlug}`}
-                      className="!py-2"
-                    >
-                      Apply
-                    </Button>
+                  <div className="mt-6 flex items-center justify-between gap-4">
+                    <span className="text-sm text-subtle">
+                      {l.commitment}
+                      {l.applicationMethod === "external" && l.applicationUrl && (
+                        <span className="mt-1 block text-xs">Off-site application</span>
+                      )}
+                    </span>
+                    {l.applicationMethod === "external" && l.applicationUrl ? (
+                      <Button
+                        href={l.applicationUrl}
+                        external
+                        id={`apply-${l.uid}`}
+                        label={`Apply for ${l.role} at ${names[l.startupSlug] ?? l.startupSlug} on the startup's website`}
+                        className="!py-2"
+                      >
+                        Apply on site
+                      </Button>
+                    ) : (
+                      <Button
+                        id={`apply-${l.uid}`}
+                        onClick={() => setActive(l)}
+                        label={`Apply for ${l.role} at ${names[l.startupSlug] ?? l.startupSlug}`}
+                        className="!py-2"
+                      >
+                        Apply
+                      </Button>
+                    )}
                   </div>
                 </motion.div>
               </Reveal>

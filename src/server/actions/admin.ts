@@ -4,8 +4,16 @@ import { updateTag } from "next/cache";
 import { requireFaculty } from "@/server/auth";
 import { db } from "@/server/supabase/admin";
 import { sessionClient } from "@/server/supabase/server";
-import { deleteInboxItem, getInboxItem, saveInboxItem, writeSection } from "@/server/content";
+import {
+  deleteInboxItem,
+  getBlogSubmission,
+  getInboxItem,
+  rejectBlogSubmission as rejectSubmissionRow,
+  saveInboxItem,
+  writeSection,
+} from "@/server/content";
 import { makeUid, slugify, uniqueSlug } from "@/lib/utils";
+import { parseVideo } from "@/lib/video";
 import { type Content, type InboxKind, type Section } from "@/types/content";
 import { isPreviewMode } from "@/server/preview";
 
@@ -71,8 +79,15 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
       ctaHeading: str(o.ctaHeading, 80),
       email: str(o.email, 120),
       address: str(o.address, 300),
-      instagram: str(o.instagram, 300),
-      linkedin: str(o.linkedin, 300),
+      instagram: link(o.instagram) ?? "",
+      linkedin: link(o.linkedin) ?? "",
+      teamPhoto: media(o.teamPhoto) ?? "",
+      linktree: link(o.linktree) ?? "",
+      introReel: link(o.introReel) ?? "",
+      posters: link(o.posters) ?? "",
+      publicity: link(o.publicity) ?? "",
+      ideaForm: link(o.ideaForm) ?? "",
+      interviewForm: link(o.interviewForm) ?? "",
     };
   },
   stats: (v) =>
@@ -113,22 +128,35 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
         solution: str(o.solution, 800),
         photo: media(o.photo),
         website: link(o.website),
-        video: link(o.video),
+        // parseVideo rejects unsafe protocols and unknown malformed links before they reach the site.
+        video: (() => {
+          const url = link(o.video);
+          return url && parseVideo(url) ? url : undefined;
+        })(),
       };
     });
   },
   listings: (v) =>
-    arr(v).map((o) => ({
-      uid: str(o.uid, 40) || makeUid("jb"),
-      startupSlug: str(o.startupSlug, 80),
-      role: str(o.role, 80),
-      skills: (Array.isArray(o.skills) ? o.skills : [])
-        .map((s) => str(s, 30))
-        .filter(Boolean)
-        .slice(0, 12),
-      commitment: str(o.commitment, 40),
-      compensation: pick(o.compensation, ["Paid", "Equity", "Unpaid"] as const),
-    })),
+    arr(v).map((o) => {
+      const rawUrl = str(o.applicationUrl, 300);
+      const applicationUrl = /^https?:\/\/\S+$/i.test(rawUrl) ? rawUrl : undefined;
+      if (o.applicationMethod === "external" && !applicationUrl)
+        throw new Error("External roles need a full http(s) application URL.");
+      const applicationMethod = o.applicationMethod === "external" ? "external" : "internal";
+      return {
+        uid: str(o.uid, 40) || makeUid("jb"),
+        startupSlug: str(o.startupSlug, 80),
+        role: str(o.role, 80),
+        skills: (Array.isArray(o.skills) ? o.skills : [])
+          .map((s) => str(s, 30))
+          .filter(Boolean)
+          .slice(0, 12),
+        commitment: str(o.commitment, 40),
+        compensation: pick(o.compensation, ["Paid", "Equity", "Unpaid"] as const),
+        applicationMethod,
+        applicationUrl: applicationMethod === "external" ? applicationUrl : undefined,
+      } as Content["listings"][number];
+    }),
   divisions: (v) =>
     arr(v).map((o) => ({
       uid: str(o.uid, 40) || makeUid("dv"),
@@ -171,6 +199,24 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
       summary: str(o.summary, 600),
       url: link(o.url),
     })),
+  gallery: (v) => {
+    const photos: Content["gallery"] = [];
+    for (const o of arr(v)) {
+      const src = media(o.src);
+      if (!src) continue;
+      const width = Number(o.width);
+      const height = Number(o.height);
+      photos.push({
+        uid: str(o.uid, 40) || makeUid("ph"),
+        src,
+        alt: str(o.alt, 180) || "E-Cell photo",
+        caption: str(o.caption, 160) || undefined,
+        width: Number.isFinite(width) && width > 0 ? Math.round(width) : undefined,
+        height: Number.isFinite(height) && height > 0 ? Math.round(height) : undefined,
+      });
+    }
+    return photos;
+  },
   team: (v) =>
     arr(v).map((o) => ({
       uid: str(o.uid, 40) || makeUid("tm"),
@@ -287,5 +333,38 @@ export async function deleteFeedback(id: string): Promise<Result> {
     return { ok: true };
   } catch (e) {
     return fail(e, "Could not delete that comment.");
+  }
+}
+
+// ---------- student blog moderation ----------
+export async function approveBlogSubmission(id: string): Promise<Result> {
+  try {
+    const who = await requireFaculty();
+    const submission = await getBlogSubmission(id);
+    if (!submission) return { ok: false, error: "That blog submission no longer exists." };
+    if (submission.status === "approved" && submission.postSlug)
+      return { ok: true, message: submission.postSlug };
+    const { data: slug, error } = await db().rpc("approve_blog_submission", {
+      p_id: id,
+      p_uid: makeUid("bp"),
+      p_base_slug: slugify(submission.title) || "student-blog",
+      p_publish_date: new Date().toISOString().slice(0, 10),
+      p_reviewer: who.name || who.email,
+    });
+    if (error) throw new Error(error.message);
+    updateTag("content");
+    return { ok: true, message: String(slug) };
+  } catch (e) {
+    return fail(e, "Could not approve that blog submission.");
+  }
+}
+
+export async function rejectBlogSubmission(id: string, reason: string): Promise<Result> {
+  try {
+    const who = await requireFaculty();
+    await rejectSubmissionRow(id, str(reason, 500), who.name || who.email);
+    return { ok: true };
+  } catch (e) {
+    return fail(e, "Could not reject that blog submission.");
   }
 }

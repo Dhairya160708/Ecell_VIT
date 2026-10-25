@@ -108,11 +108,17 @@ async function applyToListingImpl(form: FormData): Promise<FormResult> {
   if (!(await allowSubmission("application"))) return { ok: false, error: RATE_LIMIT_ERROR };
   const { data: listing, error } = await db()
     .from("listings")
-    .select("role,startup_slug,startups(name)")
+    .select("role,startup_slug,application_method,application_url,startups(name)")
     .eq("uid", listingUid)
     .maybeSingle();
   if (error) throw new Error(`Could not look up the open role: ${error.message}`);
   if (!listing) return { ok: false, error: "This role is no longer open." };
+  if (listing.application_method === "external")
+    return {
+      ok: false,
+      error:
+        "This role takes applications on the startup's own site. Use the “Apply on their site” button on the listing.",
+    };
   const startups = listing.startups as unknown as { name: string } | null;
   const startup = startups?.name ?? listing.startup_slug;
   await saveInboxItem({
@@ -138,6 +144,55 @@ export async function submitIdea(form: FormData) {
 }
 export async function applyToListing(form: FormData) {
   return safe(() => applyToListingImpl(form));
+}
+
+async function submitBlogImpl(form: FormData): Promise<FormResult> {
+  if (isPreviewMode()) return { ok: false, error: PREVIEW_ERROR };
+  if (isBot(form)) return { ok: true };
+  const title = tidy(f(form, "title", 120)).replace(/\s+/g, " ");
+  const summary = tidy(f(form, "summary", 300));
+  const body = tidy(f(form, "body", 20000));
+  const author = tidy(f(form, "author", 80)).replace(/\s+/g, " ");
+  const authorEmail = f(form, "email", 120).toLowerCase();
+
+  if (title.length < 4) return { ok: false, error: "Please add a title (at least 4 characters)." };
+  if (!author) return { ok: false, error: "Please add your name." };
+  if (!isValidEmail(authorEmail)) return { ok: false, error: "That email address doesn't look right." };
+  if (body.length < 80)
+    return { ok: false, error: "Please write a little more before submitting (at least 80 characters)." };
+  if (!(await allowSubmission("blog"))) return { ok: false, error: RATE_LIMIT_ERROR };
+
+  const client = db();
+  const { count: duplicate, error: duplicateError } = await client
+    .from("blog_submissions")
+    .select("id", { count: "exact", head: true })
+    .eq("title", title)
+    .eq("author_email", authorEmail)
+    .eq("status", "pending");
+  if (duplicateError)
+    throw new Error(`Could not check for duplicate blog submissions: ${duplicateError.message}`);
+  if ((duplicate ?? 0) > 0)
+    return {
+      ok: false,
+      error: "This blog is already waiting for review. We'll publish it if it's approved.",
+    };
+
+  const { error } = await client.from("blog_submissions").insert({
+    id: makeUid("bs"),
+    created_at: now(),
+    title,
+    summary,
+    body,
+    author,
+    author_email: authorEmail,
+    status: "pending",
+  });
+  if (error) throw new Error(`Could not save the blog submission: ${error.message}`);
+  return { ok: true };
+}
+
+export async function submitBlog(form: FormData) {
+  return safe(() => submitBlogImpl(form));
 }
 
 export type FeedbackResult = { ok: true; feedback: Feedback } | { ok: false; error: string };
