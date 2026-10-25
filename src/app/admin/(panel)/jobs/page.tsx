@@ -22,7 +22,7 @@ export default function Page() {
     <>
       <PageTitle
         title="Jobs board"
-        description="Roles that student startups need help with. They appear on the Marketplace page, and applications land in your Inbox."
+        description="Roles that student startups need help with. They appear on the Jobs page, and applications land in your Inbox."
       />
       <Suspense fallback={<Loading />}>
         <Data />

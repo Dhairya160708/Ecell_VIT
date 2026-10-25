@@ -23,7 +23,7 @@ const tabs: { kind: InboxKind; label: string; icon: React.ReactNode; empty: stri
     kind: "applications",
     label: "Job applications",
     icon: <BriefcaseBusiness className="h-4 w-4" />,
-    empty: "Applications from the Marketplace page will show up here.",
+    empty: "Applications from the Jobs page will show up here.",
   },
 ];
 

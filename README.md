@@ -2,7 +2,7 @@
 
 The website of the Entrepreneurship Cell of Vidyalankar Institute of Technology ("The Scouts of VIT"). It has:
 
-- a **public site**: events, startup showcases by domain, an animated home-page gallery, a "help wanted" marketplace (with on-site or external applications), a team page, a blog with student submissions, an About page and contact/idea-submission forms;
+- a **public site**: events, startup showcases by domain, an animated home-page gallery, a "help wanted" jobs board (with on-site or external applications), a team page, a blog with student submissions, an About page and contact/idea-submission forms;
 - a **faculty admin panel** at `/admin`: review submitted startup ideas and student blogs, moderate feedback, and edit all site content (including gallery photos, team photo and footer resource links) without touching code. Approving an idea or blog publishes it on the public site.
 
 ## Tech stack
@@ -76,7 +76,7 @@ data-backed features.
 ```
 src/
   app/                    Routes only (Next.js App Router)
-    (site)/               Public pages: home, events, startups, marketplace, about, contact, submit
+    (site)/               Public pages: home, events, startups, jobs, about, contact, submit
     admin/                Admin panel: login + (panel)/ pages (inbox, events, startups, jobs, people, ...)
     api/admin/upload/     Photo upload endpoint (faculty only)
     media/[name]/         Serves uploaded photos
@@ -85,7 +85,7 @@ src/
     ui/                   Small shared pieces: Button, Reveal, Counter, Eyebrow, ScrollProgress
     layout/               Site chrome: Nav, Footer, Logo, Intro animation, PageHeader
     home/                 Home-page sections (Hero, Divisions, startup/team marquees, gallery, ...)
-    events/ startups/ marketplace/ blog/ team/ contact/    One folder per feature (cards + the page's interactive view)
+    events/ startups/ jobs/ blog/ team/ contact/    One folder per feature (cards + the page's interactive view)
     admin/                Admin UI: shell, editors, inbox/review queue
   server/                 Server-only code: never imported into browser code
     content.ts            Reads/writes site content in Supabase (the single data-access module)

@@ -14,7 +14,7 @@ import { useFocusTrap } from "@/hooks/use-focus-trap";
 const field =
   "w-full border border-line bg-surface px-4 py-3 text-sm outline-none transition focus:border-gold focus:shadow-[0_0_0_4px_var(--gold-soft)]";
 
-export function MarketplaceView({ listings, names }: { listings: Listing[]; names: Record<string, string> }) {
+export function JobsView({ listings, names }: { listings: Listing[]; names: Record<string, string> }) {
   const [active, setActive] = useState<Listing | null>(null);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +29,7 @@ export function MarketplaceView({ listings, names }: { listings: Listing[]; name
     active ? document.getElementById(`apply-${active.uid}`) : null,
   );
 
-  // Deep link: /marketplace?apply=<listing id> opens that listing's Apply dialog straight away.
+  // Deep link: /jobs?apply=<listing id> opens that listing's Apply dialog straight away.
   const wanted = useSearchParams().get("apply");
   const [handled, setHandled] = useState<string | null>(null);
   if (wanted && wanted !== handled) {
@@ -57,7 +57,7 @@ export function MarketplaceView({ listings, names }: { listings: Listing[]; name
     <>
       {/* inert while the dialog is open: the page behind it can't be tabbed to or read by a screen reader */}
       <div inert={active ? true : undefined}>
-        <PageHeader eyebrow="Marketplace" title="Help" accent="wanted.">
+        <PageHeader eyebrow="Jobs board" title="Help" accent="wanted.">
           Showcased startups are looking for students with your skills.
         </PageHeader>
         <section className="mx-auto max-w-6xl px-5 pt-14 pb-28">

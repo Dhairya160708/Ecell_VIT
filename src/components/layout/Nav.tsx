@@ -11,7 +11,7 @@ const links = [
   ["Home", "/"],
   ["Events", "/events"],
   ["Startups", "/startups"],
-  ["Marketplace", "/marketplace"],
+  ["Jobs", "/jobs"],
   ["Grants", "/grants"],
   ["Blog", "/blog"],
   ["Team", "/team"],

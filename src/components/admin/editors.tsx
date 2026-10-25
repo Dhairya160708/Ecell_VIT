@@ -275,7 +275,7 @@ export function JobsEditor({
       type: "select",
       required: true,
       options: opts([
-        ["internal", "On this website (form in the Marketplace)"],
+        ["internal", "On this website (form on the Jobs page)"],
         ["external", "On the startup's own site (external link)"],
       ]),
       hint: "External listing applications are handled entirely by the destination you configure below.",
@@ -319,7 +319,7 @@ export function JobsEditor({
         title: l.role,
         subtitle: `${names[l.startupSlug] ?? "Unknown startup"} · ${l.commitment || "Flexible"}`,
         badge: <Badge>{l.compensation}</Badge>,
-        href: "/marketplace",
+        href: "/jobs",
       })}
     />
   );
