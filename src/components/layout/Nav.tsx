@@ -42,14 +42,14 @@ export function Nav() {
         <Link href="/" aria-label="E-Cell VIT home" onClick={() => setOpen(false)}>
           <Logo />
         </Link>
-        <ul className="hidden items-center gap-5 lg:flex xl:gap-8">
+        <ul className="hidden items-center gap-5 xl:flex 2xl:gap-7">
           {links.map(([label, href]) => {
             const active = href === "/" ? path === "/" : path.startsWith(href);
             return (
               <li key={href}>
                 <Link
                   href={href}
-                  className={`group relative font-grotesk text-sm font-medium uppercase tracking-[0.12em] transition-colors ${active ? "text-gold" : "text-muted hover:text-ivory"}`}
+                  className={`group relative whitespace-nowrap font-grotesk text-[13px] font-medium uppercase tracking-[0.1em] transition-colors ${active ? "text-gold" : "text-muted hover:text-ivory"}`}
                 >
                   {label}
                   <span
@@ -60,8 +60,8 @@ export function Nav() {
             );
           })}
         </ul>
-        <div className="hidden xl:block">
-          <Button href="/submit" className="!px-5 !py-2.5">
+        <div className="hidden 2xl:block">
+          <Button href="/submit" className="!px-5 !py-2.5 whitespace-nowrap">
             Join the regiment
           </Button>
         </div>
@@ -69,7 +69,7 @@ export function Nav() {
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-label="Toggle navigation"
-          className="grid h-11 w-11 place-items-center border border-line-strong text-ivory lg:hidden"
+          className="grid h-11 w-11 place-items-center border border-line-strong text-ivory xl:hidden"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -80,7 +80,7 @@ export function Nav() {
             initial={{ height: 0 }}
             animate={{ height: "auto" }}
             exit={{ height: 0 }}
-            className="overflow-hidden border-t border-line lg:hidden"
+            className="overflow-hidden border-t border-line xl:hidden"
             aria-label="Mobile navigation"
           >
             <div className="px-5 py-4">

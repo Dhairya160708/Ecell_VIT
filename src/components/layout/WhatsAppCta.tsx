@@ -23,20 +23,31 @@ export function WhatsAppCta({ variant }: { variant: "footer" | "banner" }) {
       <span
         aria-disabled="true"
         title="The WhatsApp community is launching soon"
-        className="inline-flex cursor-not-allowed items-center gap-2.5 border border-line px-4 py-2.5 font-grotesk text-xs font-bold uppercase tracking-[0.14em] text-subtle"
+        className="inline-flex h-11 w-11 cursor-not-allowed items-center justify-center border border-line text-subtle"
       >
         <WhatsAppIcon />
-        WhatsApp Community · Coming soon
       </span>
     );
   }
+  if (variant === "footer") {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Join our WhatsApp Community"
+        title="Join our WhatsApp Community"
+        className="inline-flex h-11 w-11 items-center justify-center border border-line-strong text-ivory transition hover:border-[#25D366] hover:bg-[#25D366] hover:text-ink"
+      >
+        <WhatsAppIcon />
+      </a>
+    );
+  }
   const cls =
-    variant === "footer"
-      ? "group inline-flex items-center gap-2.5 border border-line-strong px-4 py-2.5 font-grotesk text-xs font-bold uppercase tracking-[0.14em] text-ivory transition hover:border-[#25D366] hover:bg-[#25D366] hover:text-ink"
-      : "group inline-flex items-center justify-center gap-2.5 bg-[#25D366] px-7 py-3.5 font-grotesk text-sm font-bold uppercase tracking-[0.12em] text-ink transition hover:bg-[#1ebe5b]";
+    "group inline-flex items-center justify-center gap-2.5 bg-[#25D366] px-7 py-3.5 font-grotesk text-sm font-bold uppercase tracking-[0.12em] text-ink transition hover:bg-[#1ebe5b]";
   return (
     <a href={url} target="_blank" rel="noopener noreferrer" className={cls}>
-      <WhatsAppIcon className={variant === "footer" ? "h-[18px] w-[18px]" : "h-5 w-5"} />
+      <WhatsAppIcon className="h-5 w-5" />
       Join our WhatsApp Community
       <ArrowUpRight className="h-3.5 w-3.5 opacity-60 transition group-hover:opacity-100" />
     </a>

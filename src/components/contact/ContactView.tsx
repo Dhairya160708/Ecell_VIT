@@ -10,6 +10,8 @@ const field =
   "mt-2 w-full border border-ink/15 bg-ivory/60 px-4 py-3.5 text-sm text-ink outline-none transition placeholder:text-ink/60 focus:border-gold focus:bg-white focus:shadow-[0_0_0_4px_rgba(199,165,79,.18)]";
 const label = "block font-grotesk text-xs font-bold uppercase tracking-[0.14em] text-ink/60";
 
+const mapQuery = "Vidyalankar Institute of Technology, Wadala East, Mumbai 400037";
+
 export function ContactView({ email, address }: { email: string; address: string }) {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -57,13 +59,18 @@ export function ContactView({ email, address }: { email: string; address: string
                   <span className="mt-1 block font-semibold">{email}</span>
                 </span>
               </a>
-              <div className="flex gap-4 border-y border-ink/15 py-5">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex gap-4 border-y border-ink/15 py-5 transition hover:text-moss"
+              >
                 <MapPin className="h-5 w-5 shrink-0 text-gold-deep" />
                 <span>
                   <span className={label}>Campus</span>
                   <span className="mt-1 block max-w-xs font-semibold leading-6">{address}</span>
                 </span>
-              </div>
+              </a>
             </div>
           </div>
           <div className="bg-white p-6 shadow-[0_30px_80px_-30px_rgba(11,14,17,.35)] md:p-10">
@@ -146,6 +153,27 @@ export function ContactView({ email, address }: { email: string; address: string
               )}
             </AnimatePresence>
           </div>
+        </div>
+        <div className="mx-auto mt-16 max-w-7xl px-5 lg:px-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 className="font-display text-5xl">Visit the campus.</h2>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-grotesk text-sm font-bold uppercase tracking-[0.1em] text-moss"
+            >
+              Open in Google Maps ↗
+            </a>
+          </div>
+          <iframe
+            title="Map showing Vidyalankar Institute of Technology, Wadala, Mumbai"
+            src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+            className="mt-6 h-[360px] w-full border border-ink/15 md:h-[460px]"
+          />
         </div>
       </section>
     </>

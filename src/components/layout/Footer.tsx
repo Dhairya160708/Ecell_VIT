@@ -150,20 +150,19 @@ export function Footer({ site }: { site: SiteText }) {
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2.5 border border-line-strong px-4 py-2.5 font-grotesk text-xs font-bold uppercase tracking-[0.14em] text-ivory transition hover:border-gold hover:bg-gold hover:text-ink"
+                    aria-label={label}
+                    title={label}
+                    className="inline-flex h-11 w-11 items-center justify-center border border-line-strong text-ivory transition hover:border-gold hover:bg-gold hover:text-ink"
                   >
                     {icon}
-                    {label}
-                    <ArrowUpRight className="h-3.5 w-3.5 opacity-60 transition group-hover:opacity-100" />
                   </a>
                 ) : (
                   <span
                     key={label}
                     title="Add this link in the admin panel under Website text"
-                    className="inline-flex cursor-not-allowed items-center gap-2.5 border border-line px-4 py-2.5 font-grotesk text-xs font-bold uppercase tracking-[0.14em] text-subtle"
+                    className="inline-flex h-11 w-11 cursor-not-allowed items-center justify-center border border-line text-subtle"
                   >
                     {icon}
-                    {label}
                   </span>
                 ),
               )}
@@ -176,10 +175,15 @@ export function Footer({ site }: { site: SiteText }) {
           <div>
             <p className={colHead}>Find us</p>
             <div className="mt-5 space-y-5 text-sm leading-6 text-muted">
-              <p className="flex gap-3">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex gap-3 transition hover:text-gold"
+              >
                 <MapPin className="mt-1 h-4 w-4 shrink-0 text-gold" />
                 {site.address}
-              </p>
+              </a>
               <a href={`mailto:${site.email}`} className="flex items-center gap-3 transition hover:text-gold">
                 <Mail className="h-4 w-4 shrink-0 text-gold" />
                 {site.email}

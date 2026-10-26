@@ -13,8 +13,8 @@ export const defaultSite: SiteText = {
   ctaHeading: "Have an idea worth building?",
   email: "ecell@vit.edu.in",
   address: "Vidyalankar Institute of Technology, Vidyalankar College Marg, Wadala (E), Mumbai 400037",
-  instagram: "",
-  linkedin: "",
+  instagram: "https://www.instagram.com/ecell.vit",
+  linkedin: "https://www.linkedin.com/company/e-cell-vit/",
   teamPhoto: "",
   linktree: "",
   introReel: "",
@@ -29,8 +29,8 @@ export const defaultSite: SiteText = {
  * so redeploy after changing it). Anything that isn't an https WhatsApp link is ignored, which hides the button.
  */
 export const whatsappCommunityUrl = (() => {
-  const raw = process.env.NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL?.trim();
-  if (!raw) return undefined;
+  const raw =
+    process.env.NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL?.trim() || "https://chat.whatsapp.com/BuOKYZeSfoXAVO88pz2JPX";
   try {
     const u = new URL(raw);
     const ok = u.protocol === "https:" && (u.hostname === "wa.me" || u.hostname.endsWith("whatsapp.com"));

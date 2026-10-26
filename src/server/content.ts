@@ -252,7 +252,15 @@ export async function readContent(): Promise<Content> {
       readList("gallery"),
     ]);
   return {
-    site: { ...defaultSite, ...((settings.data?.data as object) ?? {}) },
+    // Blank saved values fall back to the defaults (e.g. the social links), so an empty field never hides them.
+    site: {
+      ...defaultSite,
+      ...Object.fromEntries(
+        Object.entries((settings.data?.data as Record<string, unknown>) ?? {}).filter(
+          ([, v]) => !(typeof v === "string" && v.trim() === ""),
+        ),
+      ),
+    },
     stats,
     events,
     startups,
