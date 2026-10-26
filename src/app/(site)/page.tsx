@@ -23,7 +23,7 @@ export default async function Home() {
       <EventsRail events={c.events} />
       {c.startups.length > 0 && <Ventures startups={c.startups} />}
       <GalleryMasonry photos={c.gallery} />
-      <People faculty={c.faculty} team={c.team} />
+      <People faculty={c.faculty} />
       <TeamMarquee team={c.team} />
       <CallToAction heading={c.site.ctaHeading} />
     </>

@@ -412,6 +412,12 @@ export function DivisionsEditor({ items, revision }: { items: Division[]; revisi
           hint: "Keep it to one short word. It's shown very large on the home page.",
         },
         {
+          key: "photo",
+          label: "Photo",
+          type: "image",
+          hint: "Optional image for this division.",
+        },
+        {
           key: "line",
           label: "What this division does",
           type: "textarea",
@@ -422,8 +428,8 @@ export function DivisionsEditor({ items, revision }: { items: Division[]; revisi
       ]}
       emptyIcon={<Shield className="h-6 w-6" />}
       emptyText="Divisions appear in the gold ribbons and the expanding panels on the home page."
-      blank={() => ({ name: "", line: "" })}
-      summary={(d) => ({ title: d.name, subtitle: d.line, href: "/" })}
+      blank={() => ({ name: "", line: "", photo: "" })}
+      summary={(d) => ({ title: d.name, subtitle: d.line, image: d.photo ?? "", href: "/" })}
     />
   );
 }

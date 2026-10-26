@@ -1,9 +1,9 @@
-import { ArrowUpRight } from "lucide-react";
 import type { Person } from "@/types/content";
 import { Eyebrow } from "../ui/Eyebrow";
 import { Reveal } from "../ui/Reveal";
 
-export function People({ faculty, team }: { faculty: Person[]; team: Person[] }) {
+export function People({ faculty }: { faculty: Person[]; team?: Person[] }) {
+  if (!faculty.length) return null;
   return (
     <section id="people" className="relative py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
@@ -43,69 +43,6 @@ export function People({ faculty, team }: { faculty: Person[]; team: Person[] })
                     {f.role}
                   </p>
                   <p className="mt-2 text-sm text-muted">{f.dept}</p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-28 border-t border-line pt-16">
-          <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div>
-              <Eyebrow>Behind the build</Eyebrow>
-              <h2 className="font-display text-[clamp(3rem,5.5vw,5.5rem)] text-ivory">E-Cell team</h2>
-            </div>
-            <p className="max-w-sm text-sm leading-6 text-muted">
-              Students designing the systems, stories, and digital experiences that keep the community
-              connected.
-            </p>
-          </Reveal>
-          <div className="mt-10 grid gap-px overflow-hidden border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-            {team.map((m, i) => (
-              <Reveal key={m.uid} i={i} className="h-full">
-                <article className="group relative h-full bg-bg p-7 transition-colors duration-500 hover:bg-elev">
-                  <div className="flex items-start justify-between">
-                    <span className="font-grotesk text-xs font-bold tracking-[0.2em] text-gold">
-                      0{i + 1}
-                    </span>
-                    {m.photo && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={m.photo}
-                        alt={m.name}
-                        className="h-16 w-16 rounded-full object-cover ring-1 ring-gold/40"
-                      />
-                    )}
-                  </div>
-                  <h3 className="mt-10 font-display text-4xl text-ivory">{m.name}</h3>
-                  <p className="mt-2 text-sm text-muted">{[m.domain, m.role].filter(Boolean).join(" · ")}</p>
-                  {(m.linkedin || m.github) && (
-                    <p className="mt-5 flex gap-3">
-                      {m.linkedin && (
-                        <a
-                          href={m.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`${m.name} on LinkedIn`}
-                          className="flex items-center gap-1 font-grotesk text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-gold"
-                        >
-                          LinkedIn <ArrowUpRight className="h-3.5 w-3.5" />
-                        </a>
-                      )}
-                      {m.github && (
-                        <a
-                          href={m.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`${m.name} on GitHub`}
-                          className="flex items-center gap-1 font-grotesk text-[11px] font-bold uppercase tracking-widest text-muted transition hover:text-gold"
-                        >
-                          GitHub <ArrowUpRight className="h-3.5 w-3.5" />
-                        </a>
-                      )}
-                    </p>
-                  )}
-                  <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gold transition-all duration-500 group-hover:w-full" />
                 </article>
               </Reveal>
             ))}

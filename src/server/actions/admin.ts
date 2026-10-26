@@ -162,6 +162,7 @@ const clean: { [K in Section]: (v: unknown) => Content[K] } = {
       uid: str(o.uid, 40) || makeUid("dv"),
       name: str(o.name, 30),
       line: str(o.line, 200),
+      photo: media(o.photo),
     })),
   faculty: (v) =>
     arr(v).map((o) => ({
