@@ -42,8 +42,8 @@ const lists: Record<
   },
   divisions: {
     table: "divisions",
-    from: (r: Row) => ({ uid: r.uid, name: r.name, line: r.line }),
-    to: (o: Row) => ({ uid: o.uid, name: o.name, line: o.line }),
+    from: (r: Row) => ({ uid: r.uid, name: r.name, line: r.line, photo: nul(r.photo) }),
+    to: (o: Row) => ({ uid: o.uid, name: o.name, line: o.line, photo: o.photo ?? null }),
   },
   events: {
     table: "events",

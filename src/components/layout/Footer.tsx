@@ -10,7 +10,7 @@ const explore: FooterLink[] = [
   { label: "Home", href: "/" },
   { label: "Events", href: "/events" },
   { label: "Startups", href: "/startups" },
-  { label: "Marketplace", href: "/marketplace" },
+  { label: "Jobs", href: "/jobs" },
   { label: "Gallery", href: "/#gallery" },
 ];
 const community: FooterLink[] = [

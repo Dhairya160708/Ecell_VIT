@@ -16,8 +16,8 @@ const pieces = [
   },
   {
     icon: Users,
-    title: "Talent marketplace",
-    body: "Founders post what they need. Other students apply with a short pitch of their skills.",
+    title: "Jobs board",
+    body: "Founders post open roles. Other students apply with a short pitch of their skills.",
   },
 ];
 

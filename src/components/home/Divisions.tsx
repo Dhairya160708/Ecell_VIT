@@ -43,6 +43,15 @@ export function Divisions({ divisions }: { divisions: Division[] }) {
               transition={{ type: "spring", stiffness: 200, damping: 28 }}
               className={`group relative overflow-hidden border text-left transition-colors duration-500 ${on ? "border-gold/60 bg-gradient-to-br from-forest to-elev lg:flex-[5]" : "border-line bg-surface hover:border-line-strong lg:flex-1"}`}
             >
+              {d.photo && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={d.photo}
+                  alt=""
+                  aria-hidden
+                  className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${on ? "opacity-25" : "opacity-10"}`}
+                />
+              )}
               {on && (
                 <Crest className="pointer-events-none absolute -bottom-10 -right-8 h-72 w-auto opacity-[0.12]" />
               )}

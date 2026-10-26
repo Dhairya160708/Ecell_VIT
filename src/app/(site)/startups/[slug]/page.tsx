@@ -102,7 +102,7 @@ async function StartupDetail({ params }: { params: Params }) {
                   </p>
                 </div>
                 <Button
-                  href={`/marketplace?apply=${l.uid}`}
+                  href={`/jobs?apply=${l.uid}`}
                   label={`Apply for ${l.role}`}
                   variant="ghost"
                   className="!py-2"

@@ -94,7 +94,7 @@ export type Grant = {
   url?: string;
 };
 
-export type Division = { uid: string; name: string; line: string };
+export type Division = { uid: string; name: string; line: string; photo?: string };
 export type Stat = { uid: string; value: string; label: string };
 
 export type SiteText = {
